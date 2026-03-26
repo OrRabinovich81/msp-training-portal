@@ -310,6 +310,7 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
   <div class="nav-item" onclick="showPage('troubleshoot')"><span class="n-icon">🔧</span>Troubleshooter<span class="nav-badge">9</span></div>
 
   <div class="sidebar-section">Guide — Section 1</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('infinity-portal')"><span class="n-icon">›</span>Infinity Portal Setup</div>
   <div class="nav-item" onclick="showPage('guide');showSection('overview')"><span class="n-icon">›</span>What is SASE?</div>
   <div class="nav-item" onclick="showPage('guide');showSection('access-model')"><span class="n-icon">›</span>Agent vs. Agentless</div>
   <div class="nav-item" onclick="showPage('guide');showSection('object-model')"><span class="n-icon">›</span>Network Object Model</div>
@@ -319,6 +320,7 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
   <div class="nav-item" onclick="showPage('guide');showSection('firewall-ports')"><span class="n-icon">›</span>Firewall &amp; Ports</div>
   <div class="nav-item" onclick="showPage('guide');showSection('ipsec-config')"><span class="n-icon">›</span>IPsec Configuration</div>
   <div class="nav-item" onclick="showPage('guide');showSection('connector')"><span class="n-icon">›</span>P81 Connector</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('mdm-deploy')"><span class="n-icon">›</span>MDM Deployment</div>
 
   <div class="sidebar-section">Guide — Section 3</div>
   <div class="nav-item" onclick="showPage('guide');showSection('policies')"><span class="n-icon">›</span>Policy Framework</div>
@@ -381,6 +383,7 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
   <div class="guide-layout">
     <div class="guide-toc">
       <div class="toc-sec">Section 1 — Overview</div>
+      <div class="toc-item" onclick="showSection('infinity-portal')">Infinity Portal Setup</div>
       <div class="toc-item active" onclick="showSection('overview')">What is Harmony SASE?</div>
       <div class="toc-item" onclick="showSection('access-model')">Agent vs. Agentless</div>
       <div class="toc-item" onclick="showSection('object-model')">Network Object Model</div>
@@ -389,6 +392,7 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
       <div class="toc-item" onclick="showSection('firewall-ports')">Firewall &amp; Ports</div>
       <div class="toc-item" onclick="showSection('ipsec-config')">IPsec Configuration</div>
       <div class="toc-item" onclick="showSection('connector')">P81 Connector</div>
+      <div class="toc-item" onclick="showSection('mdm-deploy')">MDM Deployment</div>
       <div class="toc-sec">Section 3 — Policies</div>
       <div class="toc-item" onclick="showSection('policies')">Policy Framework</div>
       <div class="toc-item" onclick="showSection('ztna-dpc')">ZTNA &amp; DPC</div>
@@ -451,6 +455,36 @@ const SECTIONS = {
       <li>Data residency: US, EU (GDPR), AU, IN, CA — affects all endpoint hostnames</li>
     </ul>`
   },
+  'infinity-portal':{ey:'Section 1',ti:'Infinity Portal &amp; Workspace Setup',de:'How Check Point SASE connects to the Infinity Portal, and how to onboard an existing Harmony SASE workspace for MSP management.',html:`
+    <div class="callout c-note"><strong>Background:</strong> Following Check Point's acquisition of Perimeter 81 in September 2023, the product was renamed Harmony SASE and integrated into the Infinity Portal. MSPs manage all customer tenants through the Infinity Portal at <a href="https://portal.checkpoint.com" target="_blank">portal.checkpoint.com</a>.</div>
+    <div class="g-sub">Accessing Harmony SASE via Infinity Portal</div>
+    <p class="prose">To access Harmony SASE through the Infinity Portal, the Infinity Portal tenant must be associated with the Harmony SASE workspace. The data residency region of both must match — this is a hard requirement.</p>
+    <div class="steps">
+      <div class="s-step"><div class="s-num">1</div><div class="s-body"><strong>Create or verify an Infinity Portal tenant</strong><br>
+        If no Infinity Portal tenant exists: create one at <a href="https://portal.checkpoint.com/create-account" target="_blank">portal.checkpoint.com/create-account</a> — select the same data residency region as the Harmony SASE workspace (US, EU, AU, IN).<br>
+        If a tenant already exists: confirm its data residency matches the SASE workspace. If they differ, either migrate the SASE workspace or create a new Infinity Portal tenant in the matching region.</div></div>
+      <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Request workspace association</strong><br>
+        Send an association request to your account manager or to <strong>sase-support@checkpoint.com</strong> with:<br>
+        • Perimeter 81 / Harmony SASE workspace name<br>
+        • Infinity Portal account ID<br>
+        • Infinity Portal data residency region</div></div>
+      <div class="s-step"><div class="s-num">3</div><div class="s-body"><strong>Access after association</strong><br>
+        Log in at <a href="https://portal.checkpoint.com/signin" target="_blank">portal.checkpoint.com/signin</a> → Infinity Portal menu → <strong>SASE - Internet &amp; Private Access</strong> under the Harmony pillar → click <strong>Get Started</strong> to open your workspace.</div></div>
+    </div>
+    <div class="g-sub">Linking a User Center Account (Optional)</div>
+    <p class="prose">A User Center account is only required if you want to pay for Harmony SASE via Check Point billing or purchase additional Check Point products. Existing Perimeter 81 customers do not need a User Center account for Harmony SASE access.</p>
+    <ul class="blist">
+      <li>To link: Infinity Portal → gear icon next to tenant name → <strong>Services &amp; Contracts</strong> → <strong>Link A User Center Account</strong></li>
+      <li>Alternatively: on the Welcome to Harmony SASE page click <strong>"Already have a contract?"</strong></li>
+    </ul>
+    <div class="g-sub">MSP Multi-Tenant Management</div>
+    <table class="gt"><tr><th>Task</th><th>How</th></tr>
+    <tr><td>Switch between customer tenants</td><td>Infinity Portal top-left tenant dropdown — select the customer workspace</td></tr>
+    <tr><td>Create a new customer workspace</td><td>Contact your Check Point account manager — MSP workspaces are provisioned through the partner portal</td></tr>
+    <tr><td>Delegated customer admin</td><td>Team &gt; Members &gt; invite as Admin or Manager role in the specific customer workspace</td></tr>
+    <tr><td>Centralized license management</td><td>Managed through the Infinity Portal partner dashboard — seat counts and add-ons per tenant</td></tr>
+    </table>`
+  },
   'access-model':{ey:'Section 1',ti:'Agent vs. Agentless — A Critical Distinction',de:'The most important concept for MSPs to understand and communicate clearly before any deployment.',html:`
     <div class="callout c-danger"><strong>Do not position agentless ZTNA as a "lighter version" of the agent.</strong> They have fundamentally different scope and security capabilities. MSPs must communicate this clearly before deployment.</div>
     <div class="access-compare">
@@ -496,7 +530,7 @@ const SECTIONS = {
       <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Configure Identity Provider</strong> — Settings &gt; Identity Providers. Map group attributes while the network is provisioning. Verify group sync completes before configuring ZTNA rules. Group names must match IdP exactly — case-sensitive.</div></div>
       <div class="s-step"><div class="s-num">3</div><div class="s-body"><strong>Configure Site-to-Site Tunnels</strong> <em>(Private Access only — skip for Internet Access accounts)</em> — Set up IPsec or Perimeter 81 Connector tunnels for all sites the customer needs to reach. Both IPsec peers must use identical settings. <strong>Verify the tunnel is active and passing traffic before moving on</strong> — test connectivity to an internal resource from the portal side before any agents are deployed. If IPsec is proving difficult, switch to the Perimeter 81 Connector (WireGuard) — no firewall changes needed on the customer side.</div></div>
       <div class="s-step"><div class="s-num">4</div><div class="s-body"><strong>Configure ZTNA Applications or Access Policies</strong> <em>(Private Access only — skip for Internet Access accounts)</em> — Now that tunnels are verified, publish internal applications via Applications &gt; Private Applications, or configure network-level access policies. ZTNA apps require the tunnel to be active on the correct Network object — this is why tunnels come first.</div></div>
-      <div class="s-step"><div class="s-num">5</div><div class="s-body"><strong>Deploy the Agent</strong> — MDM push (Intune/Jamf/Mosyle) via enrollment token, manual installer, or self-service portal. The agent uses the OS default browser for IdP login — change the default browser if login fails. For Internet Access only accounts this can happen earlier; for Private Access it should come after tunnels are verified so users connect to a working environment.</div></div>
+      <div class="s-step"><div class="s-num">5</div><div class="s-body"><strong>Deploy the Agent</strong> — MDM push (Intune/Jamf/Mosyle) via enrollment token, manual installer, or self-service portal. The agent uses the OS default browser for IdP login — change the default browser if login fails. For Internet Access only accounts this can happen earlier and the installation token can be used for transparent deployment; for Private Access it should come after tunnels are verified, and users must authenticate individually — the installation token does not grant Private Access.</div></div>
       <div class="s-step"><div class="s-num">6</div><div class="s-body"><strong>Test End-to-End</strong> — Have a test user log in via IdP and verify: (a) agent connects successfully, (b) internal resources are reachable (Private Access), (c) internet traffic is inspected correctly (Internet Access). Troubleshoot before handing off to the customer.</div></div>
     </div>
     <div class="g-sub">Pre-Deployment Checklist</div>
@@ -597,6 +631,88 @@ nc -zv sdp.perimeter81.com 5050</code>
     </div>
     <div class="callout c-note"><strong>KB reference:</strong> support.perimeter81.com/docs/configuring-a-wireguard-connector → Prerequisites section confirms the static internal IP requirement.</div>`
   },
+  'mdm-deploy':{ey:'Section 2',ti:'MDM Agent Deployment',de:'Deploying the Harmony SASE agent at scale using Mobile Device Management (Intune, Jamf, Mosyle, etc.), including pre-configuration and Internet Access Policy setup for macOS.',html:`
+    <div class="callout c-warn"><strong>Important:</strong> If you are managing agent deployment via MDM, <strong>disable the auto-update function</strong> in the Harmony SASE portal to prevent looping installation issues. Portal: Devices &gt; Downloads &gt; disable client auto-update.</div>
+    <div class="g-sub">Step 1 — Generate an Installation Token (Internet Access only)</div>
+    <div class="callout c-warn"><strong>Internet Access deployments only.</strong> The installation token enables transparent registration for Internet Access — users get security policy enforced immediately without logging in. For <strong>Private Access</strong> (VPN / internal resources), the token does not help — users must still authenticate individually to register their device and access private networks. Do not use the token as a substitute for user authentication on Private Access accounts.</div>
+    <p class="prose">The installation token allows transparent Internet Access policy enforcement without requiring end users to manually log in during installation. Applies to agent version 11.5 and above.</p>
+    <ul class="blist">
+      <li>Portal: <strong>Devices &gt; Downloads</strong> — scroll to the Installation Token section</li>
+      <li>Click <strong>Generate Token</strong> — visible to Admin users only</li>
+      <li>Copy the token — you will use it in the MDM deployment command</li>
+      <li>Note: once generated, the token validity period cannot be modified</li>
+    </ul>
+    <div class="g-sub">Step 2 — Download the Agent Installer</div>
+    <ul class="blist">
+      <li>Portal: <strong>Devices &gt; Downloads</strong> — download the correct installer for your target OS</li>
+      <li>macOS: <code>.pkg</code> file (Harmony_SASE_x.x.x.xxx.pkg for v11.0.10+)</li>
+      <li>Windows: <code>.msi</code> file (Harmony_SASE_x.x.x.xxx.msi for v11.0+)</li>
+      <li>Upload the installer to your MDM platform (Jamf, Intune, Mosyle, AirWatch, etc.)</li>
+    </ul>
+    <div class="g-sub">Step 3 — Deploy via MDM with Silent Installation</div>
+    <p class="prose">Use the following commands in your MDM platform's script/package deployment configuration:</p>
+    <table class="gt"><tr><th>Platform</th><th>Silent Install Command</th></tr>
+    <tr><td><strong>macOS</strong> (v11.0.10+)</td><td><code>sudo installer -pkg Harmony_SASE_x.x.x.xxx.pkg -target /</code></td></tr>
+    <tr><td><strong>Windows</strong> (v11.0+)</td><td><code>msiexec /quiet /i Harmony_SASE_x.x.x.xxx.msi</code></td></tr>
+    </table>
+    <p class="prose">To pre-populate the workspace name and region, and register users transparently for <strong>Internet Access</strong> using the installation token:</p>
+    <table class="gt"><tr><th>Platform</th><th>Full Deployment Command</th></tr>
+    <tr><td><strong>macOS</strong></td><td>
+      <code>sudo defaults write com.perimeter81d region "US"</code><br>
+      <code>sudo defaults write com.perimeter81d INSTALLATION_PARAMETERS -dict TENANT_TOKEN "your-token"</code><br>
+      <code>sudo defaults write com.perimeter81d EMAIL "user@company.com"</code><br>
+      Then run the installer: <code>sudo installer -pkg Harmony_SASE_x.x.x.xxx.pkg -target /</code><br>
+      <em>Note: EMAIL is mandatory for macOS transparent registration.</em>
+    </td></tr>
+    <tr><td><strong>Windows</strong></td><td>
+      <code>msiexec /quiet /i "Harmony_SASE_XX.XX.XX.XXXX.msi" REGION="US" TENANT_TOKEN="your-token"</code><br>
+      <em>If device username does not match user email, add:</em> <code>EMAIL="user@company.com"</code>
+    </td></tr>
+    </table>
+    <div class="callout c-note"><strong>REGION values:</strong> US = America, EU = Europe, AU = Australia, IN = India, CA = Canada</div>
+    <div class="g-sub">Step 4 — macOS with Internet Access Policy (Additional MDM Profiles Required)</div>
+    <div class="callout c-danger"><strong>macOS only — required when Internet Access Policy is enabled.</strong> Without these profiles, macOS will prompt users to approve the System Extension and Content Filter manually, which can lead to misconfigurations or users dismissing the prompt. Pre-deploying via MDM eliminates user approval entirely.</div>
+    <p class="prose">Three components must be deployed via MDM <strong>before or alongside</strong> the agent installer:</p>
+    <div class="steps">
+      <div class="s-step"><div class="s-num">1</div><div class="s-body"><strong>Deploy the Internet Access Policy CA Certificate</strong><br>
+        Download the certificate: Portal &gt; Internet Access &gt; HTTPS Inspection &gt; Download Certificate (or see KB: support.perimeter81.com/docs/swg-certificate).<br>
+        Add it to your MDM as a <strong>Certificate payload</strong> targeting the System keychain — deploy it as a trusted CA before the agent installs.</div></div>
+      <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Deploy the .mobileconfig profile (easiest method)</strong><br>
+        Download the pre-built profile: <a href="https://cdn.document360.io/44667c0c-50d7-412a-acbd-20d4a41c952e/Images/Documentation/Harmony%20SASE.mobileconfig" target="_blank">Harmony SASE.mobileconfig</a><br>
+        Upload this to your MDM and deploy to all target macOS devices. It contains the Content Filter and System Extension configurations pre-configured.</div></div>
+      <div class="s-step"><div class="s-num">3</div><div class="s-body"><strong>Or configure manually in your MDM — Content Filter payload:</strong><br>
+        <table class="gt" style="margin-top:8px;">
+          <tr><th>Field</th><th>Value</th></tr>
+          <tr><td>Filter Type</td><td>Plug-in</td></tr>
+          <tr><td>Connection Name</td><td>Harmony SASE</td></tr>
+          <tr><td>Identifier</td><td><code>com.safervpn.osx.smb</code></td></tr>
+          <tr><td>Filter Webkit Traffic</td><td>Yes</td></tr>
+          <tr><td>Filter Socket Traffic</td><td>Yes</td></tr>
+          <tr><td>Filter Grade</td><td>Firewall</td></tr>
+          <tr><td>Team ID</td><td><code>924635PD62</code></td></tr>
+        </table>
+      </div></div>
+      <div class="s-step"><div class="s-num">4</div><div class="s-body"><strong>System Extension payload (add under VPN Payload Profiles):</strong><br>
+        <table class="gt" style="margin-top:8px;">
+          <tr><th>Field</th><th>Value</th></tr>
+          <tr><td>Profile context</td><td>Device Profile</td></tr>
+          <tr><td>Allow User Overrides</td><td>Yes</td></tr>
+          <tr><td>Allowed System Extension Types</td><td>Network</td></tr>
+          <tr><td>Team ID</td><td><code>924635PD62</code></td></tr>
+          <tr><td>Bundle Identifier</td><td><code>com.safervpn.osx.smb.proxy</code></td></tr>
+        </table>
+      </div></div>
+    </div>
+    <div class="callout c-note"><strong>Deploy order matters:</strong> Certificate → mobileconfig profile → agent installer. If the certificate is not trusted before the agent installs, Internet Access Policy SSL inspection will fail with certificate errors on all HTTPS sites.</div>
+    <div class="g-sub">MDM Platform References</div>
+    <table class="gt"><tr><th>MDM Platform</th><th>Documentation</th></tr>
+    <tr><td>Jamf Pro</td><td>docs.jamf.com — use Policy or PreStage Enrollment to deploy the pkg and profiles</td></tr>
+    <tr><td>Microsoft Intune</td><td>Add the .msi as a Line-of-Business app; deploy .mobileconfig via Device Configuration profiles</td></tr>
+    <tr><td>Mosyle</td><td>Apps &gt; In-house Apps for the pkg; MDM Profiles for the .mobileconfig</td></tr>
+    <tr><td>VMware AirWatch</td><td>Deploy as a public app; push the mobileconfig as a Custom Profile</td></tr>
+    <tr><td>SCCM (Windows)</td><td>See KB: support.perimeter81.com/docs/deploy-with-sccm</td></tr>
+    </table>`
+  },
   'policies':{ey:'Section 3',ti:'Policy Framework Overview',de:'Five independent policy layers — all per customer tenant. Agent required for everything except ZTNA App Access.',html:`
     <table class="gt"><tr><th>Layer</th><th>Configured Under</th><th>Agent?</th><th>Scope</th></tr>
     <tr><td><strong>ZTNA App Access</strong></td><td>Applications &gt; Private Applications</td><td><span class="badge b-red">No</span></td><td>One published internal resource — browser portal only</td></tr>
@@ -683,9 +799,18 @@ nc -zv sdp.perimeter81.com 5050</code>
     <tr><td>Blocked Account</td><td>10 consecutive failed logins</td><td>Team &gt; Members &gt; ... &gt; Unblock</td></tr>
     <tr><td>Web portal works, agent doesn't</td><td>Windows service stopped; macOS extension not approved; concurrent VPN</td><td>Check services.msc (Windows); Login Items (macOS); ensure no other VPN running</td></tr>
     </table>
+    <div class="g-sub">Recovering Admin Access after an IdP Lock</div>
+    <p class="prose">If an IdP integration is misconfigured and you are locked out of the Harmony SASE portal entirely — unable to log in via the IdP — use this procedure to regain access using your original SASE database credentials:</p>
+    <div class="steps">
+      <div class="s-step"><div class="s-num">1</div><div class="s-body">Navigate directly to your workspace URL: <code>yourworkspace.perimeter81.com</code></div></div>
+      <div class="s-step"><div class="s-num">2</div><div class="s-body">Enter your admin email address</div></div>
+      <div class="s-step"><div class="s-num">3</div><div class="s-body">Click <strong>"Sign in using email and password"</strong> — this bypasses the IdP redirect and uses your original SASE database credentials</div></div>
+      <div class="s-step"><div class="s-num">4</div><div class="s-body">Once in, navigate to Settings &gt; Identity Providers and correct the misconfigured IdP settings before re-enabling the integration</div></div>
+    </div>
+    <div class="callout c-warn"><strong>Keep your SASE database credentials safe.</strong> These are your emergency bypass — if you lose them and your IdP is broken, you will be fully locked out. Ensure at least one admin has SASE DB credentials stored securely outside the IdP.</div>
     <div class="g-sub">Self-Resolution Sequence</div>
     <div class="steps">
-      <div class="s-step"><div class="s-num">1</div><div class="s-body"><strong>Sync device clock</strong> — most certificate, auth, and DPC issues stem from clock drift</div></div>
+      <div class="s-step"><div class="s-num">1</div><div class="s-body"><strong>Sync device clock</strong> — an out-of-sync clock causes certificate registration and authentication errors</div></div>
       <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Restart agent</strong> — quit completely (not just close the window), wait 10 seconds, relaunch</div></div>
       <div class="s-step"><div class="s-num">3</div><div class="s-body"><strong>Restart the device</strong> — clears stale network state, especially after sleep/wake cycles</div></div>
       <div class="s-step"><div class="s-num">4</div><div class="s-body"><strong>Reinstall using a freshly downloaded installer</strong> — corrupted installations cause a significant proportion of persistent issues</div></div>
@@ -731,9 +856,18 @@ nc -zv sdp.perimeter81.com 5050</code>
   },
   'tunnel-ts':{ey:'Section 4',ti:'IPsec &amp; Connector Troubleshooting',de:'Diagnosing tunnel down, traffic not passing, flapping, BGP, and Connector problems.',html:`
     <div class="callout c-note"><strong>Before troubleshooting:</strong> Check Operational Events log during the problem period — Portal &gt; Monitor &amp; Logs &gt; Operational Events. Also verify Routes Table: Networks &gt; [Network] &gt; options &gt; Routes Table.</div>
+    <div class="callout c-note"><strong>Field naming varies by router vendor.</strong> The same concept is called different things on different platforms — see the table below. When in doubt, export logs from the customer router/firewall and look for IKE negotiation errors — they will show exactly which parameter mismatched.</div>
+    <div class="g-sub">IPsec Field Name Reference — Harmony SASE vs. Router Terminology</div>
+    <table class="gt"><tr><th>Harmony SASE Portal Label</th><th>What It Means</th><th>Equivalent on Router/Firewall</th></tr>
+    <tr><td>Public IP / Remote ID</td><td>The customer's public IP address</td><td>Remote Gateway / Peer IP / IKE Peer</td></tr>
+    <tr><td>SASE Gateway Proposal Subnet</td><td>The Harmony SASE network subnet (e.g. 10.255.0.0/16)</td><td>Remote Subnet / Destination Network</td></tr>
+    <tr><td>Remote Gateway Proposal Subnet</td><td>The customer's on-premises or cloud subnet</td><td>Local Subnet / Source Network</td></tr>
+    <tr><td>Shared Secret / PSK</td><td>Pre-shared key — must be identical on both sides, including case and special characters</td><td>Pre-shared Key / Secret / Password</td></tr>
+    </table>
+    <div class="callout c-warn"><strong>0.0.0.0/0 subnets:</strong> If you set the SASE Gateway Proposal Subnet to 0.0.0.0/0, you must also set the Remote Subnet on the customer router to 0.0.0.0/0. Both sides must match exactly. Using specific subnets is recommended where possible.</div>
     <div class="g-sub">Tunnel Shows as Down</div>
     <table class="gt"><tr><th>Check</th><th>Action</th></tr>
-    <tr><td>Parameter mismatch (most common)</td><td>Verify IKEv2, AES-256, SHA-256, DH Group 14 (Phase 1 &amp; PFS), lifetimes, and PSK — all must be identical on both peers. IKE Mode = Main Mode.</td></tr>
+    <tr><td>Parameter mismatch (most common)</td><td>Verify all Phase 1 and Phase 2 parameters match on both peers exactly. IKE Mode must be Main Mode — Aggressive Mode is not supported.</td></tr>
     <tr><td>Remote peer IP changed</td><td>Update in portal: Networks &gt; Sites &gt; [Site] &gt; Edit</td></tr>
     <tr><td>SonicWall Gen7 / SonicOS 7+</td><td>Use IKEv1 — IKEv2 is unstable on this firmware version</td></tr>
     <tr><td>PSK mismatch</td><td>Re-enter on both sides — check trailing whitespace and encoding differences</td></tr>
@@ -830,6 +964,10 @@ dig @&lt;dns-server-ip&gt; hostname.company.com</code>
     <tr><td>Certificate Pinning Bypass</td><td>support.perimeter81.com/docs/certificate-pinning</td></tr>
     <tr><td>WireGuard Connector</td><td>support.perimeter81.com/docs/configuring-a-wireguard-connector</td></tr>
     <tr><td>HAR File Collection</td><td>support.perimeter81.com/docs/generating-a-har-file-for-troubleshooting</td></tr>
+    <tr><td>IPsec Troubleshooting</td><td>support.perimeter81.com/docs/troubleshooting</td></tr>
+    <tr><td>Reclaim Access after IdP Lock</td><td>support.perimeter81.com/docs/360010132719</td></tr>
+    <tr><td>Change PC/Mac DNS Settings</td><td>support.perimeter81.com/docs/change-your-pc-dns-settings</td></tr>
+    <tr><td>Infinity Portal Onboarding</td><td>support.perimeter81.com/docs/onboarding-the-infinity-portal</td></tr>
     <tr><td>Platform Status</td><td>status.perimeter81.com</td></tr>
     <tr><td>Admin Guide</td><td>docs.checkpoint.com/harmony-sase</td></tr>
     <tr><td>Support Portal</td><td>supportcenter.checkpoint.com</td></tr>
@@ -842,7 +980,7 @@ dig @&lt;dns-server-ip&gt; hostname.company.com</code>
 // ═══════════════════════════════════════════════════════
 const SYMPTOMS=[
   {id:'agent-connect',icon:'🔌',title:'Agent won\'t connect',desc:'Stuck connecting, spinning, or repeated disconnections',
-   flow:[{q:'Is the system clock synchronised on the affected device?',body:'Clock drift is the #1 cause of agent failures. Windows: Settings &gt; Date &amp; Time &gt; Sync Now. macOS: System Settings &gt; General &gt; Date &amp; Time.',
+   flow:[{q:'Is the system clock synchronised on the affected device?',body:'An out-of-sync system clock causes certificate registration failures and authentication errors. Windows: Settings &gt; Date &amp; Time &gt; Sync Now. macOS: System Settings &gt; General &gt; Date &amp; Time.',
     yes:{q:'Does the issue occur on a mobile hotspot too?',body:'Switching to a mobile hotspot bypasses the corporate firewall. This is the key scoping question.',
      yes:{result:'Device-specific issue — work through these steps in order before escalating.',detail:'<strong>Step 1 — Switch protocol</strong><br>Agent Settings &gt; Protocols &gt; switch from WireGuard to OpenVPN (or vice versa). If "Default" is set by the admin, ask the admin to change the default protocol in the portal under Devices &gt; User Configuration.<br><br><strong>Step 2 — Verify connectivity to required endpoints</strong><br>Confirm the device can reach the following (see the <a href=\"https://support.perimeter81.com/docs/can-t-connect-perimeter-s-internet-connection-troubleshooting-guide\" target=\"_blank\">full KB article</a> for the complete list):<br>• <code>api.perimeter81.com</code> (or your region equivalent)<br>• <code>sdpv2-agent-ws.perimeter81.com</code> (agents v11.7+)<br>• <code>sdp.perimeter81.com</code> (agents pre-v11.7, port 5050)<br>• <code>auth.perimeter81.com</code><br>• <code>*.auth0.com</code><br><br>Windows: <code>tnc api.perimeter81.com -port 443</code><br>macOS: <code>nc -zv api.perimeter81.com 443</code><br><br><strong>Step 3 — Restart agent</strong><br>Quit the application completely (not just close the window), wait 10 seconds, relaunch.<br><br><strong>Step 4 — Restart the device</strong><br>Clears stale network state — especially after sleep/wake cycles or network switches.<br><br><strong>Step 5 — Reinstall from a freshly downloaded installer</strong><br>Download the latest agent from the portal or from <a href=\"https://support.perimeter81.com/docs/downloading-the-agent\" target=\"_blank\">support.perimeter81.com/docs/downloading-the-agent</a>. Corrupted installations are more common than they appear.',escalate:'If all steps above are exhausted and the issue persists: open Sev 3 case. Include: agent version, OS version, exact error message, whether it works on hotspot, and agent logs. Collect logs manually: <a href=\"https://support.perimeter81.com/docs/manual-log-collection\" target=\"_blank\">support.perimeter81.com/docs/manual-log-collection</a>'},
      no:{result:'Corporate network is blocking VPN ports.',detail:'Run connectivity tests:<br><br>Windows: <code>tnc sdpv2-agent-ws.perimeter81.com -port 443</code><br>macOS: <code>nc -zv sdpv2-agent-ws.perimeter81.com 443</code><br><br>For pre-v11.7 agents, also test: <code>tnc sdp.perimeter81.com -port 5050</code><br><br>Share results with your network team to unblock the required destinations.',escalate:'If ports are confirmed open and the issue persists, open Sev 3 case with agent logs and connectivity test output. To collect agent logs manually: support.perimeter81.com/docs/manual-log-collection'}},
