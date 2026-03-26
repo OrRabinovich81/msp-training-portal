@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Check Point SASE — MSP Partner Portal</title>
+<style>
+/* ─── RESET ─── */
+*{margin:0;padding:0;box-sizing:border-box;}
+
+/* ─── BRAND TOKENS ─── */
+:root{
+  --berry:#ee0c5d;
+  --berry-click:#e40c5b;
+  --berry-dark:#b70d4e;
+  --grey:#41273c;
+  --grey-mid:#6a4f65;
+  --grey-light:#f2f2f2;
+  --white:#ffffff;
+  --orange:#ff3312;
+  --yellow:#fcb117;
+  --text:#231f20;
+  --text-mid:#5a5a5a;
+  --text-light:#888888;
+  --border:#d8d8d8;
+  --border-light:#eeeeee;
+  --font:Arial,sans-serif;
+  --mono:Consolas,monospace;
+}
+
+/* ─── LAYOUT ─── */
+html,body{height:100%;background:var(--white);color:var(--text);font-family:var(--font);overflow:hidden;}
+.app{display:grid;grid-template-columns:240px 1fr;grid-template-rows:60px 1fr;height:100vh;overflow:hidden;}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  grid-column:1/-1;
+  background:var(--grey);
+  display:flex;align-items:center;padding:0 24px;gap:20px;
+  border-bottom:3px solid var(--berry);
+}
+.topbar-logo{display:flex;align-items:center;gap:0;text-decoration:none;flex-shrink:0;}
+.topbar-logo svg{height:24px;}
+.topbar-divider{width:1px;height:28px;background:rgba(255,255,255,0.2);margin:0 16px;}
+.topbar-title{font-size:13px;font-weight:700;color:var(--white);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;}
+.topbar-subtitle{font-size:11px;color:rgba(255,255,255,0.5);margin-top:1px;}
+.topbar-search{flex:1;max-width:380px;margin-left:auto;position:relative;}
+.topbar-search input{
+  width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);
+  padding:7px 12px 7px 32px;font-size:13px;color:var(--white);font-family:var(--font);
+  outline:none;transition:border-color .15s;
+}
+.topbar-search input:focus{border-color:var(--berry);background:rgba(255,255,255,0.15);}
+.topbar-search input::placeholder{color:rgba(255,255,255,0.4);}
+.topbar-search .s-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.4);font-size:14px;}
+.search-dropdown{
+  position:absolute;top:calc(100% + 4px);left:0;right:0;
+  background:var(--white);border:1px solid var(--border);
+  z-index:200;max-height:340px;overflow-y:auto;display:none;
+  box-shadow:0 4px 12px rgba(0,0,0,0.12);
+}
+.search-dropdown.open{display:block;}
+.sd-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border-light);transition:background .1s;}
+.sd-item:last-child{border-bottom:none;}
+.sd-item:hover{background:var(--grey-light);}
+.sd-tag{font-size:10px;font-family:var(--mono);color:var(--berry);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.sd-text{font-size:12.5px;color:var(--text);}
+.sd-text mark{background:rgba(238,12,93,0.12);color:var(--berry);padding:0 2px;}
+.topbar-badge{font-size:11px;color:rgba(255,255,255,0.4);margin-left:12px;white-space:nowrap;}
+
+/* ─── SIDEBAR ─── */
+.sidebar{background:var(--grey-light);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+.sidebar-section{
+  padding:14px 16px 6px;font-size:10px;font-weight:700;color:var(--text-light);
+  letter-spacing:1.5px;text-transform:uppercase;
+}
+.nav-item{
+  display:flex;align-items:center;gap:9px;padding:9px 16px;
+  cursor:pointer;font-size:13px;color:var(--text-mid);transition:all .12s;
+  border-left:3px solid transparent;
+}
+.nav-item:hover{background:rgba(65,39,60,0.06);color:var(--grey);}
+.nav-item.active{background:rgba(238,12,93,0.07);color:var(--berry);border-left-color:var(--berry);font-weight:700;}
+.nav-item .n-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--berry);color:var(--white);font-size:10px;font-weight:700;padding:1px 6px;}
+.sidebar-footer{margin-top:auto;padding:14px 16px;border-top:1px solid var(--border);}
+.sidebar-footer p{font-size:11px;color:var(--text-light);line-height:1.8;}
+.sidebar-footer a{color:var(--berry);text-decoration:none;}
+.sidebar-footer a:hover{text-decoration:underline;}
+
+/* ─── MAIN ─── */
+.main{overflow:hidden;display:flex;flex-direction:column;background:var(--white);}
+.page{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.page.active{display:flex;}
+.page-scroll{flex:1;overflow-y:auto;padding:28px 36px;}
+
+/* ─── HOME ─── */
+.hero{
+  background:var(--grey);padding:32px 36px;margin-bottom:24px;
+  position:relative;overflow:hidden;
+  border-left:5px solid var(--berry);
+}
+.hero::after{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:6px;
+  background:var(--berry);
+}
+.hero-eyebrow{font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.hero h1{font-size:28px;font-weight:700;color:var(--white);line-height:1.2;margin-bottom:8px;}
+.hero h1 span{color:var(--berry);}
+.hero p{font-size:13.5px;color:rgba(255,255,255,0.6);line-height:1.7;max-width:580px;}
+
+.quick-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;}
+.qcard{
+  background:var(--white);border:1px solid var(--border);
+  padding:18px;cursor:pointer;transition:all .15s;text-decoration:none;display:block;
+  border-top:3px solid var(--berry);
+}
+.qcard:hover{border-color:var(--berry);box-shadow:0 2px 8px rgba(238,12,93,0.1);}
+.qcard-icon{font-size:20px;margin-bottom:8px;}
+.qcard-title{font-size:14px;font-weight:700;color:var(--grey);margin-bottom:4px;}
+.qcard-desc{font-size:12px;color:var(--text-mid);line-height:1.5;}
+
+.section-head{font-size:13px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--berry);}
+.error-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.err-card{background:var(--grey-light);border:1px solid var(--border);padding:13px 16px;cursor:pointer;transition:all .12s;border-left:3px solid var(--grey);}
+.err-card:hover{border-left-color:var(--berry);background:rgba(238,12,93,0.04);}
+.err-card-err{font-size:12px;font-family:var(--mono);color:var(--grey);margin-bottom:3px;font-weight:700;}
+.err-card-fix{font-size:12px;color:var(--text-mid);}
+
+/* ─── GUIDE ─── */
+.guide-layout{display:grid;grid-template-columns:210px 1fr;height:100%;overflow:hidden;}
+.guide-toc{background:var(--grey-light);border-right:1px solid var(--border);overflow-y:auto;padding:12px 0;}
+.toc-sec{padding:12px 16px 4px;font-size:10px;font-weight:700;color:var(--text-light);letter-spacing:1.5px;text-transform:uppercase;}
+.toc-item{
+  padding:7px 18px;font-size:12.5px;color:var(--text-mid);cursor:pointer;
+  transition:all .1s;border-left:3px solid transparent;
+}
+.toc-item:hover{color:var(--grey);background:rgba(65,39,60,0.05);}
+.toc-item.active{color:var(--berry);border-left-color:var(--berry);background:rgba(238,12,93,0.06);font-weight:700;}
+.guide-body{overflow-y:auto;padding:32px 44px;}
+
+/* Guide content */
+.g-eyebrow{font-size:11px;font-weight:700;color:var(--berry);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.g-title{font-size:24px;font-weight:700;color:var(--grey);margin-bottom:6px;line-height:1.2;}
+.g-desc{font-size:13.5px;color:var(--text-mid);line-height:1.7;margin-bottom:24px;max-width:680px;border-left:3px solid var(--berry);padding-left:12px;}
+.g-sub{font-size:14px;font-weight:700;color:var(--grey);margin:22px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--grey-light);}
+.prose{font-size:13px;color:var(--text-mid);line-height:1.75;margin-bottom:12px;max-width:760px;}
+.prose strong{color:var(--text);}
+.prose code{font-family:var(--mono);font-size:12px;background:var(--grey-light);border:1px solid var(--border);padding:1px 5px;color:var(--grey);}
+
+/* table */
+.gt{width:100%;border-collapse:collapse;margin:10px 0 20px;font-size:12.5px;}
+.gt th{background:var(--grey);color:var(--white);padding:8px 12px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.3px;}
+.gt th:first-child{border-left:3px solid var(--berry);}
+.gt td{padding:8px 12px;border-bottom:1px solid var(--border-light);color:var(--text-mid);vertical-align:top;line-height:1.5;}
+.gt td strong{color:var(--text);}
+.gt tr:nth-child(even) td{background:rgba(242,242,242,0.5);}
+.gt tr:hover td{background:rgba(238,12,93,0.03);}
+code.cmd{
+  display:block;background:var(--grey);border-left:3px solid var(--berry);
+  padding:12px 16px;font-family:var(--mono);font-size:12px;color:#f2f2f2;
+  margin:8px 0 14px;line-height:1.8;
+}
+code.cmd .comment{color:rgba(255,255,255,0.4);}
+
+/* callouts — sharp, brand-compliant */
+.callout{padding:12px 16px;margin:12px 0;font-size:13px;line-height:1.6;}
+.c-warn{background:#fff8f0;border-left:4px solid var(--orange);}
+.c-warn strong{color:var(--orange);}
+.c-note{background:#f0f6fa;border-left:4px solid #4a90d9;}
+.c-note strong{color:#2c6fa6;}
+.c-danger{background:#fff0f4;border-left:4px solid var(--berry);}
+.c-danger strong{color:var(--berry-dark);}
+.c-success{background:#f0faf4;border-left:4px solid #2d8c4e;}
+.c-success strong{color:#1f6b38;}
+
+/* badge */
+.badge{display:inline-block;padding:2px 7px;font-size:10px;font-family:var(--mono);font-weight:700;}
+.b-red{background:#fde8ef;color:#b70d4e;}
+.b-green{background:#e6f5ec;color:#1f6b38;}
+.b-blue{background:#e6f0fa;color:#2c6fa6;}
+.b-orange{background:#fff0e6;color:#c44e00;}
+
+/* blist */
+.blist{list-style:none;margin:8px 0 16px;display:flex;flex-direction:column;gap:5px;}
+.blist li{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text-mid);line-height:1.55;}
+.blist li::before{content:'';min-width:6px;height:6px;background:var(--berry);flex-shrink:0;margin-top:5px;}
+.blist li strong{color:var(--text);}
+
+/* steps */
+.steps{display:flex;flex-direction:column;gap:9px;margin:10px 0 18px;}
+.s-step{display:flex;gap:12px;align-items:flex-start;}
+.s-num{width:24px;height:24px;min-width:24px;background:var(--berry);color:var(--white);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;}
+.s-body{font-size:13px;color:var(--text-mid);line-height:1.5;padding-top:3px;}
+.s-body strong{color:var(--text);}
+
+/* access compare */
+.access-compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;}
+.ac-card{padding:18px;border:1px solid var(--border);}
+.ac-agent{background:var(--grey-light);border-top:3px solid var(--grey);}
+.ac-agentless{background:#fff0f4;border-top:3px solid var(--berry);}
+.ac-title{font-size:13px;font-weight:700;margin-bottom:10px;}
+.ac-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border-light);font-size:12px;}
+.ac-row:last-child{border-bottom:none;}
+.ac-row span:first-child{color:var(--text-mid);}
+
+/* ─── TROUBLESHOOTER ─── */
+.ts-wrap{padding:28px 36px;overflow-y:auto;flex:1;}
+.ts-head{margin-bottom:24px;}
+.ts-head h2{font-size:22px;font-weight:700;color:var(--grey);margin-bottom:6px;}
+.ts-head p{font-size:13px;color:var(--text-mid);}
+.sym-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;}
+.sym-card{
+  background:var(--white);border:1px solid var(--border);border-top:3px solid var(--grey);
+  padding:16px;cursor:pointer;transition:all .15s;
+}
+.sym-card:hover{border-top-color:var(--berry);box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+.sym-card.active{border-top-color:var(--berry);background:rgba(238,12,93,0.04);}
+.sym-icon{font-size:18px;margin-bottom:7px;}
+.sym-title{font-size:13px;font-weight:700;color:var(--grey);margin-bottom:3px;}
+.sym-desc{font-size:11.5px;color:var(--text-mid);}
+
+/* flow */
+.ts-flow{background:var(--grey-light);border:1px solid var(--border);border-top:3px solid var(--berry);padding:24px;display:none;}
+.ts-flow.open{display:block;}
+.flow-title{font-size:17px;font-weight:700;color:var(--grey);margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.flow-step{border:1px solid var(--border);background:var(--white);padding:16px 18px;margin-bottom:10px;}
+.flow-step.done{border-color:#c8e6c9;background:#f9fef9;}
+.flow-step.current{border-left:3px solid var(--berry);}
+.flow-step-num{font-size:10px;font-family:var(--mono);color:var(--text-light);margin-bottom:4px;}
+.flow-step-q{font-size:14px;color:var(--grey);font-weight:700;margin-bottom:8px;}
+.flow-step-body{font-size:13px;color:var(--text-mid);line-height:1.6;margin-bottom:10px;}
+.flow-step-body code{font-family:var(--mono);font-size:11.5px;background:var(--grey-light);border:1px solid var(--border);padding:1px 5px;color:var(--grey);}
+.flow-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.flow-btn{
+  padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;
+  font-family:var(--font);transition:all .12s;border:none;
+}
+.flow-btn-yes{background:var(--berry);color:var(--white);}
+.flow-btn-yes:hover{background:var(--berry-click);}
+.flow-btn-no{background:var(--white);color:var(--grey);border:1px solid var(--border);}
+.flow-btn-no:hover{background:var(--grey-light);border-color:var(--grey);}
+.flow-btn-alt{background:var(--grey-light);color:var(--text-mid);border:1px solid var(--border);}
+.flow-btn-alt:hover{background:var(--border);color:var(--grey);}
+
+.flow-result{background:var(--white);border:1px solid var(--border);border-left:4px solid #2d8c4e;padding:16px;margin-top:6px;}
+.flow-result h4{font-size:14px;font-weight:700;color:#1f6b38;margin-bottom:8px;}
+.flow-result p{font-size:13px;color:var(--text-mid);line-height:1.65;}
+.flow-result code{font-family:var(--mono);font-size:11.5px;background:var(--grey-light);border:1px solid var(--border);padding:1px 5px;color:var(--grey);}
+.flow-escalate{margin-top:10px;padding:10px 14px;background:#fff0f4;border-left:3px solid var(--berry);font-size:12px;color:var(--text-mid);}
+.flow-escalate strong{color:var(--berry-dark);}
+.flow-reset{
+  margin-top:14px;padding:8px 16px;background:var(--white);
+  border:1px solid var(--border);color:var(--text-mid);font-size:12px;
+  cursor:pointer;font-family:var(--font);transition:all .12s;
+}
+.flow-reset:hover{border-color:var(--grey);color:var(--grey);background:var(--grey-light);}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--grey-light);}
+::-webkit-scrollbar-thumb{background:var(--border);} 
+::-webkit-scrollbar-thumb:hover{background:var(--grey-mid);}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <a class="topbar-logo" href="#" onclick="showPage('home')">
+    <!-- Check Point logo — white variant for dark background -->
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 205 44">
+      <path fill="#fff" d="M46.7,29.9h0c0-4.3,3.2-7.8,7.7-7.8s4.4.9,5.8,2.3l-2.1,2.4c-1.1-1-2.3-1.7-3.8-1.7-2.5,0-4.3,2.1-4.3,4.6h0c0,2.6,1.7,4.7,4.3,4.7s2.7-.7,3.9-1.7l2.1,2.1c-1.5,1.6-3.2,2.7-6,2.7-4.3,0-7.5-3.4-7.5-7.7Z"/>
+      <path fill="#fff" d="M62.9,22.4h3.2v5.9h6v-5.9h3.2v14.9h-3.2v-6h-6v6h-3.2v-14.9Z"/>
+      <path fill="#fff" d="M79.2,22.4h11.1v2.9h-7.9v3h6.9v2.9h-6.9v3.1h8v2.9h-11.2v-14.9Z"/>
+      <path fill="#fff" d="M92.7,29.9h0c0-4.3,3.2-7.8,7.7-7.8s4.4.9,5.8,2.3l-2.1,2.4c-1.1-1-2.3-1.7-3.8-1.7-2.5,0-4.3,2.1-4.3,4.6h0c0,2.6,1.7,4.7,4.3,4.7s2.7-.7,3.9-1.7l2.1,2.1c-1.5,1.6-3.2,2.7-6,2.7-4.3,0-7.5-3.4-7.5-7.7Z"/>
+      <path fill="#fff" d="M108.8,22.4h3.2v6.5l6-6.5h3.9l-6,6.3,6.3,8.6h-3.9l-4.6-6.4-1.7,1.8v4.6h-3.2v-14.9h0Z"/>
+      <path fill="#fff" d="M130.8,22.4h6c3.5,0,5.6,2.1,5.6,5.2h0c0,3.5-2.6,5.3-6,5.3h-2.5v4.5h-3.2v-14.9h0ZM136.6,29.9c1.6,0,2.6-1,2.6-2.3h0c0-1.5-1-2.3-2.6-2.3h-2.5v4.6h2.6,0Z"/>
+      <path fill="#fff" d="M144.5,29.9h0c0-4.3,3.3-7.8,7.8-7.8s7.8,3.4,7.8,7.7h0c0,4.3-3.3,7.8-7.8,7.8s-7.8-3.4-7.8-7.7ZM156.8,29.9h0c0-2.6-1.8-4.7-4.5-4.7s-4.4,2.1-4.4,4.6h0c0,2.6,1.8,4.7,4.5,4.7s4.4-2.1,4.4-4.6Z"/>
+      <path fill="#fff" d="M163.3,22.4h3.2v14.9h-3.2v-14.9Z"/>
+      <path fill="#fff" d="M170.6,22.4h3l6.9,9.2v-9.2h3.2v14.9h-2.8l-7.1-9.5v9.5h-3.2v-14.9Z"/>
+      <path fill="#fff" d="M191,25.4h-4.5v-3h12.2v3h-4.5v11.9h-3.2v-11.9h0Z"/>
+      <path fill="#fff" d="M201.8,24.4h-.4v-1.7h-.6v-.3h1.6v.3h-.6v1.7h0Z"/>
+      <path fill="#fff" d="M204,23.9h0l-.6-1v1.5h-.4v-2.1h.4l.6,1,.6-1h.4v2.1h-.3v-1.5l-.6,1h0Z"/>
+      <polygon points="27.9 11 27.9 11 27.9 11 27.9 11"/>
+      <polygon points="35.2 21.7 35.2 21.7 35.2 21.7 35.2 21.7"/>
+      <path fill="#fff" d="M44.2,11.2c-2.3,2.9-6.5,3.4-9.4,1-2.9-2.3-3.3-6.6-1-9.5,2.3-2.9,6.5-3.4,9.4-1,2.9,2.3,3.3,6.6,1,9.5Z"/>
+      <path fill="#ee0c5d" d="M35.2,21.7c-1.8.9-4.1.8-6-.2l-5.2,7.1c.7.8,1,1.7,1.1,2.7,0,.9-.2,1.8-.7,2.6-1.3,2.1-4,2.7-6.1,1.3-.2-.1-.4-.3-.6-.5,0,0-.1-.1-.2-.2-.1-.1-.2-.3-.3-.4,0,0,0-.1-.1-.2-.1-.2-.2-.4-.3-.6,0,0,0-.1,0-.2,0-.2-.1-.3-.2-.5,0,0,0-.1,0-.2,0-.2,0-.4-.1-.7v-.2c0-.2,0-.4,0-.6h0c0-.4,0-.6.1-.8,0,0,0-.1,0-.2,0-.2.2-.5.3-.7l-4.2-3.2-1.3,1.8-4.8-3.7,3.6-4.9,4.8,3.7-1.3,1.8,4.3,3.3c1.3-1.1,3.2-1.4,4.8-.5l5.2-7c-2.1-2.1-2.6-5.4-1.1-8.1.3-.5.7-1,1.1-1.4-2.8-2-6.3-3.1-10-3.1C8,7.8,0,15.9,0,25.9c0,10,7.9,18.1,17.8,18.1,9.8,0,17.8-8,17.9-18,0-1.5-.2-2.9-.5-4.2Z"/>
+    </svg>
+  </a>
+  <div class="topbar-divider"></div>
+  <div>
+    <div class="topbar-title">SASE MSP Partner Portal</div>
+    <div class="topbar-subtitle">Technical Training &amp; Reference</div>
+  </div>
+  <div class="topbar-search">
+    <span class="s-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="Search guide, errors, commands…" oninput="handleSearch(this.value)" onblur="setTimeout(closeSearch,200)">
+    <div class="search-dropdown" id="searchDropdown"></div>
+  </div>
+  <div class="topbar-badge">v3.0 · March 2026</div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-section">Main</div>
+  <div class="nav-item active" onclick="showPage('home')"><span class="n-icon">⌂</span>Home</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('overview')"><span class="n-icon">📘</span>Training Guide</div>
+  <div class="nav-item" onclick="showPage('troubleshoot')"><span class="n-icon">🔧</span>Troubleshooter<span class="nav-badge">9</span></div>
+
+  <div class="sidebar-section">Guide — Section 1</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('overview')"><span class="n-icon">›</span>What is SASE?</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('access-model')"><span class="n-icon">›</span>Agent vs. Agentless</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('object-model')"><span class="n-icon">›</span>Network Object Model</div>
+
+  <div class="sidebar-section">Guide — Section 2</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('deploy')"><span class="n-icon">›</span>Deployment Workflow</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('firewall-ports')"><span class="n-icon">›</span>Firewall &amp; Ports</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('ipsec-config')"><span class="n-icon">›</span>IPsec Configuration</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('connector')"><span class="n-icon">›</span>P81 Connector</div>
+
+  <div class="sidebar-section">Guide — Section 3</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('policies')"><span class="n-icon">›</span>Policy Framework</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('ztna-dpc')"><span class="n-icon">›</span>ZTNA &amp; DPC</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('swg')"><span class="n-icon">›</span>Internet Access Policy</div>
+
+  <div class="sidebar-section">Guide — Section 4</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('agent-issues')"><span class="n-icon">›</span>Agent Issues</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('tunnel-ts')"><span class="n-icon">›</span>Tunnel Troubleshooting</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('dns-ts')"><span class="n-icon">›</span>DNS &amp; Internet Access Policy</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('escalation')"><span class="n-icon">›</span>Escalation &amp; Severity</div>
+
+  <div class="sidebar-section">Appendix</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('reference')"><span class="n-icon">›</span>Quick Reference</div>
+
+  <div class="sidebar-footer">
+    <p>
+      📚 <a href="https://support.perimeter81.com/docs" target="_blank">KB Docs</a><br>
+      🔴 <a href="https://status.perimeter81.com" target="_blank">Status Page</a><br>
+      ✉️ sase-support@checkpoint.com
+    </p>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="page-scroll">
+    <div class="hero">
+      <div class="hero-eyebrow">MSP Partner Resource · Confidential</div>
+      <h1>Check Point SASE<br><span>MSP Technical Training Portal</span></h1>
+      <p>Full training guide, interactive troubleshooter, and searchable knowledge base for MSP engineers and administrators.</p>
+    </div>
+    <div class="quick-cards">
+      <a class="qcard" onclick="showPage('guide');showSection('overview')">
+        <div class="qcard-icon">📘</div>
+        <div class="qcard-title">Training Guide</div>
+        <div class="qcard-desc">Architecture, deployment, policies, and full troubleshooting reference for MSP teams.</div>
+      </a>
+      <a class="qcard" onclick="showPage('troubleshoot')">
+        <div class="qcard-icon">🔧</div>
+        <div class="qcard-title">Interactive Troubleshooter</div>
+        <div class="qcard-desc">Pick a symptom and get a step-by-step guided diagnostic flow.</div>
+      </a>
+      <a class="qcard" onclick="document.getElementById('searchInput').focus()">
+        <div class="qcard-icon">🔍</div>
+        <div class="qcard-title">Search Everything</div>
+        <div class="qcard-desc">Find any error, port, command, or topic instantly across the full guide.</div>
+      </a>
+    </div>
+    <div class="section-head">Common Errors — Quick Lookup</div>
+    <div class="error-grid" id="errorGrid"></div>
+  </div>
+</div>
+
+<!-- GUIDE -->
+<div class="page" id="page-guide">
+  <div class="guide-layout">
+    <div class="guide-toc">
+      <div class="toc-sec">Section 1 — Overview</div>
+      <div class="toc-item active" onclick="showSection('overview')">What is Harmony SASE?</div>
+      <div class="toc-item" onclick="showSection('access-model')">Agent vs. Agentless</div>
+      <div class="toc-item" onclick="showSection('object-model')">Network Object Model</div>
+      <div class="toc-sec">Section 2 — Deployment</div>
+      <div class="toc-item" onclick="showSection('deploy')">Deployment Workflow</div>
+      <div class="toc-item" onclick="showSection('firewall-ports')">Firewall &amp; Ports</div>
+      <div class="toc-item" onclick="showSection('ipsec-config')">IPsec Configuration</div>
+      <div class="toc-item" onclick="showSection('connector')">P81 Connector</div>
+      <div class="toc-sec">Section 3 — Policies</div>
+      <div class="toc-item" onclick="showSection('policies')">Policy Framework</div>
+      <div class="toc-item" onclick="showSection('ztna-dpc')">ZTNA &amp; DPC</div>
+      <div class="toc-item" onclick="showSection('swg')">Internet Access Policy</div>
+      <div class="toc-sec">Section 4 — Troubleshooting</div>
+      <div class="toc-item" onclick="showSection('agent-issues')">Agent Issues</div>
+      <div class="toc-item" onclick="showSection('tunnel-ts')">Tunnel Troubleshooting</div>
+      <div class="toc-item" onclick="showSection('dns-ts')">DNS &amp; Internet Access Policy</div>
+      <div class="toc-item" onclick="showSection('escalation')">Escalation &amp; Severity</div>
+      <div class="toc-sec">Appendix</div>
+      <div class="toc-item" onclick="showSection('reference')">Quick Reference</div>
+    </div>
+    <div class="guide-body" id="guideBody"></div>
+  </div>
+</div>
+
+<!-- TROUBLESHOOTER -->
+<div class="page" id="page-troubleshoot">
+  <div class="ts-wrap">
+    <div class="ts-head">
+      <h2>Interactive Troubleshooter</h2>
+      <p>Select the symptom that best matches the issue you are experiencing. You will be guided through a diagnostic flow to identify and resolve the root cause.</p>
+    </div>
+    <div class="sym-grid" id="symGrid"></div>
+    <div class="ts-flow" id="tsFlow">
+      <div class="flow-title" id="flowTitle"></div>
+      <div id="flowSteps"></div>
+      <button class="flow-reset" onclick="resetFlow()">← Back to symptom selection</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// GUIDE SECTIONS DATA
+// ═══════════════════════════════════════════════════════
+const SECTIONS = {
+  'overview':{ey:'Section 1',ti:'What is Check Point SASE?',de:'Check Point SASE (formerly Perimeter 81) converges WAN networking and enterprise security into a single cloud-native platform — no on-premises hardware required.',html:`
+    <div class="callout c-danger"><strong>Note on naming:</strong> The product is now branded as Check Point SASE. References to "Harmony SASE" or "Perimeter 81" in the portal UI, documentation, and KB articles reflect the previous naming. Both refer to the same platform.</div>
+    <div class="g-sub">Core Service Capabilities</div>
+    <table class="gt"><tr><th>Capability</th><th>Agent Required?</th><th>Description</th></tr>
+    <tr><td><strong>ZTNA App Access (Agentless)</strong></td><td><span class="badge b-red">No</span></td><td>Browser portal access to ONE published internal resource per session. No internet security. Internal tunneled resources only.</td></tr>
+    <tr><td><strong>Agent / Private Access</strong></td><td><span class="badge b-green">Yes</span></td><td>Full network access to all permitted internal resources (RDP, SSH, databases, file shares).</td></tr>
+    <tr><td><strong>Internet Access Policy</strong></td><td><span class="badge b-green">Yes</span></td><td>SSL/TLS decryption, URL filtering, malware protection, DNS security.</td></tr>
+    <tr><td><strong>Firewall as a Service (FWaaS)</strong></td><td><span class="badge b-green">Yes</span></td><td>Network-level L3/L4 firewall rules enforced at the PoP.</td></tr>
+    <tr><td><strong>Device Posture Check (DPC)</strong></td><td><span class="badge b-green">Yes</span></td><td>Pre-connection compliance enforcement before granting access.</td></tr>
+    <tr><td><strong>IPsec / WireGuard Tunnels</strong></td><td><span class="badge b-blue">No</span></td><td>Site-to-site connectivity. Independent of agent deployment.</td></tr>
+    <tr><td><strong>IdP Integration</strong></td><td>Both</td><td>SAML 2.0, OIDC, Azure AD / Entra, Okta, Google Workspace.</td></tr>
+    </table>
+    <div class="callout c-danger"><strong>Critical:</strong> Agentless ZTNA App Access provides NO internet security. Users are not protected by SWG, SSL inspection, DNS filtering, or FWaaS for their general internet traffic. The agent is required for all of these.</div>
+    <div class="g-sub">MSP Multi-Tenant Architecture</div>
+    <ul class="blist">
+      <li>Single Infinity Portal for all customer tenants — full isolation per customer</li>
+      <li>Each customer = isolated namespace: policy, network, users, logs</li>
+      <li>Delegated customer admin roles available</li>
+      <li>Centralized licensing and seat management</li>
+      <li>Data residency: US, EU (GDPR), AU, IN, CA — affects all endpoint hostnames</li>
+    </ul>`
+  },
+  'access-model':{ey:'Section 1',ti:'Agent vs. Agentless — A Critical Distinction',de:'The most important concept for MSPs to understand and communicate clearly before any deployment.',html:`
+    <div class="callout c-danger"><strong>Do not position agentless ZTNA as a "lighter version" of the agent.</strong> They have fundamentally different scope and security capabilities. MSPs must communicate this clearly before deployment.</div>
+    <div class="access-compare">
+      <div class="ac-card ac-agentless">
+        <div class="ac-title" style="color:var(--berry)">Agentless ZTNA App Access</div>
+        <div class="ac-row"><span>Private resources</span><span style="font-size:12px;color:var(--text-mid)">ONE published app per session</span></div>
+        <div class="ac-row"><span>Internet traffic</span><span class="badge b-red">NOT protected</span></div>
+        <div class="ac-row"><span>SSL decryption</span><span class="badge b-red">No</span></div>
+        <div class="ac-row"><span>URL/malware filtering</span><span class="badge b-red">No</span></div>
+        <div class="ac-row"><span>Device Posture Check</span><span style="font-size:12px;color:var(--text-mid)">Limited</span></div>
+        <div class="ac-row"><span>Best for</span><span style="font-size:12px;color:var(--text-mid)">BYOD / contractors, single web app</span></div>
+        <div class="ac-row"><span>Resource location</span><span style="font-size:12px;color:var(--text-mid)">Internal only — must be reachable via an existing IPsec/Connector tunnel</span></div>
+      </div>
+      <div class="ac-card ac-agent">
+        <div class="ac-title" style="color:var(--grey)">Agent-Based Access (Installed Client)</div>
+        <div class="ac-row"><span>Private resources</span><span style="font-size:12px;color:var(--text-mid)">All: RDP, SSH, DB, file shares</span></div>
+        <div class="ac-row"><span>Internet traffic</span><span class="badge b-green">Fully protected</span></div>
+        <div class="ac-row"><span>SSL decryption</span><span class="badge b-green">Yes</span></div>
+        <div class="ac-row"><span>URL/malware filtering</span><span class="badge b-green">Yes</span></div>
+        <div class="ac-row"><span>Device Posture Check</span><span class="badge b-green">Full enforcement</span></div>
+        <div class="ac-row"><span>Best for</span><span style="font-size:12px;color:var(--text-mid)">All managed corporate devices</span></div>
+      </div>
+    </div>
+    <div class="callout c-warn"><strong>ZTNA App Access only works for internal resources reachable via an existing SASE Network tunnel.</strong> It does not support public internet resources and provides no internet security protection.</div>
+    <div class="callout c-note"><strong>Exception — publishing a public website you own via ZTNA:</strong> If a customer owns a public-facing site that is also reachable through an IPsec or Connector tunnel, they can publish it via ZTNA and expose it under their own domain using <strong>URL Aliasing</strong> (CNAME + SSL cert). See the ZTNA &amp; DPC section for full setup steps.</div>`
+  },
+  'object-model':{ey:'Section 1',ti:'Network Object Model',de:'Every tenant uses a three-tier object hierarchy. Understanding this is essential for correct policy, DNS, and tunnel configuration.',html:`
+    <table class="gt"><tr><th>Object</th><th>Description</th><th>Key Properties</th></tr>
+    <tr><td><strong>Network</strong></td><td>Top-level container — private IP subnet and DNS namespace</td><td>Subnet (permanent after creation), Access Type, DNS FQDN</td></tr>
+    <tr><td><strong>Region</strong></td><td>Geographic PoP deployment within a Network</td><td>80+ PoP locations worldwide, optional Regional Private DNS</td></tr>
+    <tr><td><strong>Instance / Gateway</strong></td><td>Active cloud gateway VM — tunnel termination and agent connections</td><td>Public IP, image version, ~1 Gbps / up to <strong>100</strong> concurrent users</td></tr>
+    <tr><td><strong>Tunnel</strong></td><td>IPsec or WireGuard site-to-site connection on a gateway</td><td>Peer IP, PSK, Phase 1/2 params, HA flag</td></tr>
+    </table>
+    <div class="callout c-danger"><strong>Subnet is permanent.</strong> Network subnets cannot be changed after creation. Plan IP allocation carefully before provisioning — ensure no overlap with existing customer infrastructure.</div>
+    <div class="callout c-note"><strong>Scaling:</strong> Each gateway handles ~1 Gbps and ~50 concurrent users. Add a second instance in the same region for load balancing when usage grows.</div>`
+  },
+  'deploy':{ey:'Section 2',ti:'Deployment Workflow',de:'Provisioning sequence for a new customer tenant. Order matters — tunnels must be up and verified before agents or ZTNA are configured, if Private Access to internal resources is required.',html:`
+    <div class="callout c-note"><strong>Workflow depends on the customer use case:</strong><br>
+    <strong>Internet Access only</strong> (no internal resources) — steps 1 → 2 → 3 → 5. No tunnel needed.<br>
+    <strong>Private Access to internal resources</strong> — follow all steps in order. Tunnels must be up and verified <em>before</em> deploying agents or configuring ZTNA applications. Users cannot reach internal resources until the tunnel is working.</div>
+    <div class="steps">
+      <div class="s-step"><div class="s-num">1</div><div class="s-body"><strong>Create Tenant &amp; Network</strong> — Provision workspace in Infinity Portal. Create a Private Network with a non-overlapping subnet (e.g. 10.x.0.0/16) — check the customer does not use this range internally. Avoid 192.168.1.0/24, 192.168.0.0/24, and 10.0.0.0/24 as these are used by most consumer ISPs and routers. Select PoP regions based on geography. EU-only PoPs for GDPR. The network takes ~10 minutes to spin up — use this time to configure the IdP in parallel.</div></div>
+      <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Configure Identity Provider</strong> — Settings &gt; Identity Providers. Map group attributes while the network is provisioning. Verify group sync completes before configuring ZTNA rules. Group names must match IdP exactly — case-sensitive.</div></div>
+      <div class="s-step"><div class="s-num">3</div><div class="s-body"><strong>Configure Site-to-Site Tunnels</strong> <em>(Private Access only — skip for Internet Access accounts)</em> — Set up IPsec or Perimeter 81 Connector tunnels for all sites the customer needs to reach. Both IPsec peers must use identical settings. <strong>Verify the tunnel is active and passing traffic before moving on</strong> — test connectivity to an internal resource from the portal side before any agents are deployed. If IPsec is proving difficult, switch to the Perimeter 81 Connector (WireGuard) — no firewall changes needed on the customer side.</div></div>
+      <div class="s-step"><div class="s-num">4</div><div class="s-body"><strong>Configure ZTNA Applications or Access Policies</strong> <em>(Private Access only — skip for Internet Access accounts)</em> — Now that tunnels are verified, publish internal applications via Applications &gt; Private Applications, or configure network-level access policies. ZTNA apps require the tunnel to be active on the correct Network object — this is why tunnels come first.</div></div>
+      <div class="s-step"><div class="s-num">5</div><div class="s-body"><strong>Deploy the Agent</strong> — MDM push (Intune/Jamf/Mosyle) via enrollment token, manual installer, or self-service portal. The agent uses the OS default browser for IdP login — change the default browser if login fails. For Internet Access only accounts this can happen earlier; for Private Access it should come after tunnels are verified so users connect to a working environment.</div></div>
+      <div class="s-step"><div class="s-num">6</div><div class="s-body"><strong>Test End-to-End</strong> — Have a test user log in via IdP and verify: (a) agent connects successfully, (b) internal resources are reachable (Private Access), (c) internet traffic is inspected correctly (Internet Access). Troubleshoot before handing off to the customer.</div></div>
+    </div>
+    <div class="g-sub">Pre-Deployment Checklist</div>
+    <table class="gt"><tr><th>Item</th><th>Details</th><th>✓</th></tr>
+    <tr><td>License SKU confirmed</td><td>Seat count, Internet Access Policy add-on, premium features</td><td>☐</td></tr>
+    <tr><td>Use case identified</td><td>Internet Access only, Private Access to internal resources, or both</td><td>☐</td></tr>
+    <tr><td>Data residency region identified</td><td>US / EU / AU / IN / CA — affects all endpoint hostnames</td><td>☐</td></tr>
+    <tr><td>Subnet planned (Private Access)</td><td>Non-overlapping with all customer sites — avoid 192.168.1.0/24, 192.168.0.0/24, 10.0.0.0/24</td><td>☐</td></tr>
+    <tr><td>Identity Provider ready</td><td>Azure AD / Entra, Okta, Google Workspace, or SAML/OIDC</td><td>☐</td></tr>
+    <tr><td>Tunnel prerequisites confirmed (Private Access)</td><td>Remote peer IPs, subnet ranges, IPsec parameters — or Linux server confirmed for P81 Connector</td><td>☐</td></tr>
+    <tr><td>Private application inventory (Private Access)</td><td>Internal apps to publish via ZTNA: FQDN/IP, port, protocol</td><td>☐</td></tr>
+    <tr><td>Device posture requirements</td><td>OS version minimums, AV, disk encryption, domain join (if applicable)</td><td>☐</td></tr>
+    <tr><td>Internet Access Policy CA cert deployment plan</td><td>GPO / MDM to push SASE CA to endpoint trust stores before enabling SSL inspection</td><td>☐</td></tr>
+    <tr><td>Firewall rules prepared</td><td>All required destinations allowlisted — see Firewall &amp; Ports section</td><td>☐</td></tr>
+    <tr><td>MDM / deployment tool identified</td><td>Intune, Jamf, Mosyle, or manual install</td><td>☐</td></tr>
+    </table>`
+  },
+  'firewall-ports':{ey:'Section 2',ti:'Firewall &amp; Port Requirements',de:'All devices running the agent must reach these destinations. Firewall blocks are the leading cause of new-deployment failures.',html:`
+    <div class="callout c-warn"><strong>Agent version matters for SDP endpoint.</strong> Agents prior to v11.7 use TCP 5050 to sdp.&lt;region&gt;. Agents v11.7+ use TCP 443 to sdpv2-agent-ws.perimeter81.com. Port 5050 is commonly blocked in enterprise environments — upgrading agents eliminates this issue.</div>
+    <table class="gt"><tr><th>Destination</th><th>Port</th><th>Purpose</th></tr>
+    <tr><td><code>api.&lt;region&gt;</code></td><td>TCP 443</td><td>Agent authentication and configuration download</td></tr>
+    <tr><td><code>sdpv2-agent-ws.perimeter81.com</code></td><td>TCP 443</td><td>SDP control channel — agents v11.7+ (all regions)</td></tr>
+    <tr><td><code>sdp.&lt;region&gt;</code></td><td>TCP 5050</td><td>SDP control channel — agents prior to v11.7 only</td></tr>
+    <tr><td><code>yarkon.&lt;region&gt;</code></td><td>TCP 443 (v11.7+) / TCP 50051 (prior)</td><td>Agent telemetry</td></tr>
+    <tr><td><code>swg-pu-lb-production.safersoftware.net</code></td><td>TCP 50051</td><td>URL category queries for Internet Access Policy</td></tr>
+    <tr><td><code>blockpage.perimeter81.com</code></td><td>TCP 443</td><td>Internet Access Policy block page delivery</td></tr>
+    <tr><td>Gateway IPs</td><td>UDP 51821, 8000, 8055</td><td>WireGuard VPN tunnel</td></tr>
+    <tr><td>Gateway IPs</td><td>UDP 1194, 636 / TCP 1195, 8443</td><td>OpenVPN tunnel (fallback)</td></tr>
+    </table>
+    <div class="g-sub">Data Residency Endpoints</div>
+    <table class="gt"><tr><th>Region</th><th>API Endpoint</th><th>SDP Endpoint (pre-v11.7)</th></tr>
+    <tr><td>US</td><td>api.perimeter81.com</td><td>sdp.perimeter81.com</td></tr>
+    <tr><td>EU</td><td>api.eu.sase.checkpoint.com</td><td>sdp.eu.sase.checkpoint.com</td></tr>
+    <tr><td>AU</td><td>api.au.sase.checkpoint.com</td><td>sdp.au.sase.checkpoint.com</td></tr>
+    <tr><td>IN</td><td>api.in.sase.checkpoint.com</td><td>sdp.in.sase.checkpoint.com</td></tr>
+    <tr><td>CA</td><td>api.ca.sase.checkpoint.com</td><td>sdp.ca.sase.checkpoint.com</td></tr>
+    </table>
+    <div class="g-sub">Quick Connectivity Tests</div>
+    <p class="prose"><strong>Windows (PowerShell)</strong> — look for TcpTestSucceeded : True</p>
+    <code class="cmd">tnc api.perimeter81.com -port 443
+tnc sdpv2-agent-ws.perimeter81.com -port 443
+<span class="comment"># Pre-v11.7 agents only:</span>
+tnc sdp.perimeter81.com -port 5050</code>
+    <p class="prose"><strong>macOS / Linux</strong> — look for succeeded or open</p>
+    <code class="cmd">nc -zv api.perimeter81.com 443
+nc -zv sdpv2-agent-ws.perimeter81.com 443
+<span class="comment"># Pre-v11.7 agents only:</span>
+nc -zv sdp.perimeter81.com 5050</code>
+    <div class="callout c-danger"><strong>Known conflict:</strong> Check Point Quantum firewall HTTPS inspection conflicts with Check Point SASE Internet Access Policy. Bypass SASE agent traffic from Quantum inspection. Also: SSL inspection on any corporate proxy can interfere — add SASE destinations to the SSL bypass list.</div>`
+  },
+  'ipsec-config':{ey:'Section 2',ti:'IPsec Tunnel Reference Configuration',de:'Recommended parameters for IPsec site-to-site tunnels. All parameters must be identical on both peers.',html:`
+    <div class="callout c-note"><strong>Both peers must use identical settings.</strong> A single mismatch in any parameter will prevent the tunnel from establishing. Use whatever cipher suite your remote device supports — just ensure both sides match exactly.</div>
+    <table class="gt"><tr><th>Parameter</th><th>Notes</th></tr>
+    <tr><td>Key Exchange</td><td>IKEv1 or IKEv2 — must match on both peers. Note: IKEv2 is unstable on SonicWall Gen7 / SonicOS 7+, use IKEv1 on those devices.</td></tr>
+    <tr><td>IKE Mode</td><td>Main Mode only — Aggressive Mode is NOT supported</td></tr>
+    <tr><td>Phase 1 Encryption</td><td>Any cipher supported by both peers (e.g. AES-128, AES-256) — must match exactly</td></tr>
+    <tr><td>Phase 1 Authentication</td><td>Any hash supported by both peers (e.g. SHA-256, SHA-512) — must match exactly</td></tr>
+    <tr><td>Phase 1 DH Group</td><td>Any DH group supported by both peers — must match exactly</td></tr>
+    <tr><td>Phase 2 Encryption</td><td>Any cipher supported by both peers — must match exactly</td></tr>
+    <tr><td>Phase 2 Authentication</td><td>Any hash supported by both peers — must match exactly</td></tr>
+    <tr><td>Phase 2 DH Group (PFS)</td><td>Labelled "PFS" on most remote routers — must match peer. Can be disabled if remote does not support PFS.</td></tr>
+    <tr><td>IKE Lifetime</td><td>Must match on both peers exactly</td></tr>
+    <tr><td>IPsec Lifetime</td><td>Must match on both peers exactly</td></tr>
+    <tr><td>DPD Delay / Timeout</td><td>Configurable — tune to your environment</td></tr>
+    <tr><td>DPD Action</td><td>Restart recommended — prevents tunnel staying down after a failure</td></tr>
+    <tr><td>High Availability</td><td>Optional — enable based on your redundancy requirements</td></tr>
+    </table>`
+  },
+  'connector':{ey:'Section 2',ti:'Perimeter 81 Connector (WireGuard)',de:'The recommended alternative to IPsec when firewall reconfiguration is impractical. Requires only a Linux server and outbound UDP 8000.',html:`
+    <div class="callout c-success"><strong>Prefer the Connector over IPsec</strong> when: the customer firewall does not support IKEv2 Site-to-Site, NAT is causing instability, dynamic public IP is in use, or firewall changes are not possible.</div>
+    <table class="gt"><tr><th></th><th>IPsec Tunnel</th><th>Perimeter 81 Connector</th></tr>
+    <tr><td>Firewall changes</td><td>UDP 500 &amp; 4500 bidirectional + VPN policy</td><td><span class="badge b-green">None</span> — outbound UDP 8000 only</td></tr>
+    <tr><td>Configuration</td><td>All Phase 1/2 params must match exactly on both peers</td><td><span class="badge b-green">Low</span> — portal generates the install script</td></tr>
+    <tr><td>NAT compatibility</td><td>Requires NAT-T (UDP 4500)</td><td><span class="badge b-green">Native</span></td></tr>
+    <tr><td>Dynamic public IP</td><td>Complex — additional config required</td><td><span class="badge b-green">Native</span> — set endpoint to 0.0.0.0</td></tr>
+    <tr><td>Requirement</td><td>IKEv2-capable router/firewall</td><td>Any Linux server (Ubuntu, CentOS, RHEL, AWS EC2, Azure VM)</td></tr>
+    </table>
+    <div class="g-sub">Deployment Steps</div>
+    <div class="callout c-danger"><strong>⚠️ Prerequisite — Static Internal LAN IP required.</strong> The connector VM must have a static internal LAN IP before installation. The iptables rules baked into the connector config reference the IP the machine had at install time. If the internal IP ever changes, the connector will break. Set a static IP either in your DHCP server (by MAC reservation) or directly on the Linux VM before running the install script. See: <em>support.perimeter81.com/docs/configuring-a-wireguard-connector</em> → Prerequisites.</div>
+    <div class="steps">
+      <div class="s-step"><div class="s-num">1</div><div class="s-body">Portal: <strong>Networks &gt; [Network] &gt; Gateway &gt; ... &gt; Add Tunnel &gt; Harmony SASE Connector &gt; Continue</strong></div></div>
+      <div class="s-step"><div class="s-num">2</div><div class="s-body">Enter Name, Linux server public IP (or <code>0.0.0.0</code> for dynamic IP), and internal Subnet(s) to route</div></div>
+      <div class="s-step"><div class="s-num">3</div><div class="s-body">Click Apply — portal generates the install script. Retrieve again later: Networks &gt; [Network] &gt; [Tunnel Name] &gt; Configuration</div></div>
+      <div class="s-step"><div class="s-num">4</div><div class="s-body">Run the generated script on the Linux server</div></div>
+      <div class="s-step"><div class="s-num">5</div><div class="s-body">Add static route on customer router: <strong>SASE subnet → connector's internal IP</strong></div></div>
+      <div class="s-step"><div class="s-num">6</div><div class="s-body">Enable IP forwarding if server acts as router: <code>net.ipv4.ip_forward=1</code> in /etc/sysctl.conf</div></div>
+    </div>
+    <div class="g-sub">If the Connector VM's Internal LAN IP Changed</div>
+    <p class="prose">A sudden connector outage with no external changes is a strong indicator the VM's internal LAN IP has changed. The connector installs iptables rules referencing the IP at install time — if that IP changes, the rules break silently.</p>
+    <div class="steps">
+      <div class="s-step"><div class="s-num">1</div><div class="s-body">Find the current internal IP: run <code>ifconfig</code> on the connector VM and note the LAN interface IP.</div></div>
+      <div class="s-step"><div class="s-num">2</div><div class="s-body">Check what IP the connector was installed with: <code>cat /etc/systemd/system/wg-quick*/override.conf</code> — this shows the iptables rules with the original IP hardcoded.</div></div>
+      <div class="s-step"><div class="s-num">3</div><div class="s-body">If they differ, edit the override file: <code>vim /etc/systemd/system/wg-quick*/override.conf</code></div></div>
+      <div class="s-step"><div class="s-num">4</div><div class="s-body">Replace every occurrence of the old IP with the current <code>ifconfig</code> IP. In vim: press <code>i</code> to enter insert mode, make changes, press <code>Esc</code> to exit insert mode.</div></div>
+      <div class="s-step"><div class="s-num">5</div><div class="s-body">Save and quit vim: type <code>:wq!</code> and press Enter.</div></div>
+      <div class="s-step"><div class="s-num">6</div><div class="s-body">Reload and restart the service: <code>sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart wg-quick@&lt;interface&gt;</code></div></div>
+      <div class="s-step"><div class="s-num">7</div><div class="s-body"><strong>Prevent recurrence:</strong> assign a static IP to the VM — either a DHCP reservation by MAC address on your router, or a static IP configured directly on the Linux network interface.</div></div>
+    </div>
+    <div class="callout c-note"><strong>KB reference:</strong> support.perimeter81.com/docs/configuring-a-wireguard-connector → Prerequisites section confirms the static internal IP requirement.</div>`
+  },
+  'policies':{ey:'Section 3',ti:'Policy Framework Overview',de:'Five independent policy layers — all per customer tenant. Agent required for everything except ZTNA App Access.',html:`
+    <table class="gt"><tr><th>Layer</th><th>Configured Under</th><th>Agent?</th><th>Scope</th></tr>
+    <tr><td><strong>ZTNA App Access</strong></td><td>Applications &gt; Private Applications</td><td><span class="badge b-red">No</span></td><td>One published internal resource — browser portal only</td></tr>
+    <tr><td><strong>Internet Access Policy</strong></td><td>Internet Access &gt; Access Policy / Bypass Rules</td><td><span class="badge b-green">Yes</span></td><td>HTTPS inspection, URL categories, malware — first-match rule base</td></tr>
+    <tr><td><strong>Network Firewall (FWaaS)</strong></td><td>Networks &gt; [Network] &gt; Firewall</td><td><span class="badge b-green">Yes</span></td><td>L3/L4 allow/deny — <strong>highest-numbered rule fires FIRST</strong></td></tr>
+    <tr><td><strong>Device Posture (DPC)</strong></td><td>Devices &gt; Posture Check</td><td><span class="badge b-green">Yes</span></td><td>Pre-connect compliance check per IdP group</td></tr>
+    <tr><td><strong>DNS Security</strong></td><td>Internet Access &gt; DNS Filtering</td><td><span class="badge b-green">Yes</span></td><td>Domain-level blocking before connection</td></tr>
+    </table>
+    <div class="callout c-warn"><strong>FWaaS rule order is counterintuitive.</strong> The highest-numbered rule is evaluated first. Verify rule ordering when troubleshooting unexpected allow/deny behaviour.</div>
+    <div class="callout c-note"><strong>ZTNA rules evaluate top-down — first match wins.</strong> Default Deny All applies if no rule matches. Use IdP group membership, not per-user rules.</div>`
+  },
+  'ztna-dpc':{ey:'Section 3',ti:'ZTNA App Access &amp; Device Posture Check',de:'Publishing agentless applications and enforcing pre-connection compliance.',html:`
+    <div class="callout c-danger"><strong>ZTNA App Access = one resource, browser only, internal tunneled resources only, no internet security.</strong> Use the agent for anything else.</div>
+    <div class="g-sub">Publishing a ZTNA Application</div>
+    <ul class="blist">
+      <li>Navigate to <strong>Applications &gt; Private Applications</strong></li>
+      <li>Set ONE destination: FQDN or IP + port</li>
+      <li>Select the correct <strong>Network</strong> object — resource must be reachable via a tunnel on that Network</li>
+      <li>Assign allowed IdP groups</li>
+      <li>Supported types: HTTPS, SSH, RDP, Database</li>
+    </ul>
+    <div class="g-sub">Device Posture Check (DPC) — Key Rules</div>
+    <div class="callout c-warn"><strong>Do NOT create separate DPC rules for Windows vs. macOS within the same IdP group.</strong> Combine OS conditions into a single rule — when multiple rules target the same group, only the first rule is evaluated.</div>
+    <table class="gt"><tr><th>Posture Check</th><th>What it Validates</th></tr>
+    <tr><td>OS Version</td><td>Minimum OS version (Windows, macOS, iOS, Android, ChromeOS)</td></tr>
+    <tr><td>Antivirus / EDR</td><td>AV software presence and signature currency</td></tr>
+    <tr><td>Disk Encryption</td><td>BitLocker (Windows) / FileVault (macOS) enabled</td></tr>
+    <tr><td>Screen Lock</td><td>PIN / password enforced on device</td></tr>
+    <tr><td>Domain Join</td><td>Windows domain membership — machine must be domain-joined and user must be signed in with a domain account in an active local Windows session</td></tr>
+    <tr><td>Certificate</td><td>Specific device certificate present in trust store</td></tr>
+    </table>
+    <div class="g-sub">HTTP/HTTPS ZTNA — Missing Components &amp; Host Header</div>
+    <p class="prose">Even when a ZTNA app loads, components like images, stylesheets, and scripts may fail. This is almost always a <strong>host header issue</strong> — the web server expects requests from a specific internal hostname, but receives them from the SASE-assigned FQDN (<code>*.pzero.perimeter81.com</code>).</p>
+    <div class="callout c-warn"><strong>Always configure a Custom Host Header for HTTP/HTTPS ZTNA apps.</strong> Some browsers fail to render graphical components if a host header is missing — even when the main page loads successfully.</div>
+    <div class="steps">
+      <div class="s-step"><div class="s-num">1</div><div class="s-body">In the ZTNA app settings → <strong>Custom HTTP Headers</strong></div></div>
+      <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Name:</strong> <code>Host</code> &nbsp;&nbsp; <strong>Value:</strong> the internal FQDN or hostname of the server (same value entered in the app Host field)</div></div>
+      <div class="s-step"><div class="s-num">3</div><div class="s-body">Click <strong>Apply</strong> and retest</div></div>
+    </div>
+    <div class="callout c-note">KB: <a href="https://support.perimeter81.com/docs/how-to-add-an-http-https-application" target="_blank">support.perimeter81.com/docs/how-to-add-an-http-https-application</a></div>
+    <div class="g-sub">URL Aliasing — Publish via Your Own Domain</div>
+    <p class="prose">By default, ZTNA apps are accessed via a SASE-assigned FQDN. URL Aliasing replaces this with a custom domain you own — required when the web application enforces trusted-domain authentication, or to resolve CORS issues. Use this when a customer owns a public-facing site that is also reachable via a SASE IPsec or Connector tunnel.</p>
+    <div class="steps">
+      <div class="s-step"><div class="s-num">1</div><div class="s-body">Save the ZTNA app first — the FQDN is generated after saving. Copy it from the <strong>FQDN</strong> field.</div></div>
+      <div class="s-step"><div class="s-num">2</div><div class="s-body">In your public DNS: create a <strong>CNAME</strong> record on your validated domain pointing to the copied SASE FQDN. The CNAME must be publicly resolvable.</div></div>
+      <div class="s-step"><div class="s-num">3</div><div class="s-body">Upload your SSL certificate: <strong>Settings &gt; Certificate Manager</strong> → Upload (requires Certificate Body, Private Key, and Chain).</div></div>
+      <div class="s-step"><div class="s-num">4</div><div class="s-body">In the ZTNA app → <strong>URL Alias</strong> → toggle on → enter your CNAME in <strong>External Domain (CNAME)</strong> → select your SSL certificate → Apply.</div></div>
+      <div class="s-step"><div class="s-num">5</div><div class="s-body">If the app requires connections from a specific host: also add Custom HTTP Header — <strong>Name = Host</strong>, <strong>Value = your CNAME</strong>.</div></div>
+    </div>
+    <div class="callout c-note">KB: <a href="https://support.perimeter81.com/docs/360025534473" target="_blank">support.perimeter81.com/docs/360025534473</a> — Certificate Manager &amp; URL Aliasing</div>
+    <div class="g-sub">ZTNA Application Known Issues</div>
+    <table class="gt"><tr><th>Issue</th><th>Cause</th><th>Fix</th></tr>
+    <tr><td>Page loads but components missing (images, styles, scripts)</td><td>Host header missing — web server rejects requests from SASE FQDN domain</td><td>Add Custom HTTP Header: Name = <code>Host</code>, Value = internal FQDN. See steps above.</td></tr>
+    <tr><td>CORS errors in browser console</td><td>Web server only accepts requests from a trusted domain; SASE FQDN not trusted</td><td>Configure URL Alias with your own domain + SSL cert, and set Host header to the CNAME.</td></tr>
+    <tr><td>SSO does not work within a ZTA app</td><td>ZTA window is isolated — cannot redirect to external IdP (Okta, Azure AD)</td><td>SSO must be implemented at the Harmony SASE portal level, not within the ZTA app itself</td></tr>
+    <tr><td>ZTA RDP freezes intermittently</td><td>Possible gateway resource issue</td><td>Escalate to Check Point Support (Sev 3) with: tenant ID, Network name, affected ZTA application name, and timestamp of occurrences. Support will investigate the gateway-side resource state.</td></tr>
+    <tr><td>"Apply" button greyed out when editing ZTA app</td><td>"Add relative URI" field requires a leading "/"</td><td>Edit the relative URI field — a "/" is added automatically. Then save the application.</td></tr>
+    </table>`
+  },
+  'swg':{ey:'Section 3',ti:'Internet Access Policy — Agent Required',de:'SSL inspection, URL filtering, malware protection — all require the installed agent.',html:`
+    <div class="callout c-danger"><strong>Agent required.</strong> SWG applies only to users with the agent installed. Agentless ZTNA portal users receive none of these protections. SWG is tenant-wide — applies even when the agent is not connected to a private Network.</div>
+    <div class="g-sub">Bypass Rules — Critical Note</div>
+    <div class="callout c-warn"><strong>Bypass rule destinations are CASE-SENSITIVE — they must be lowercase.</strong> If a bypass rule is not being respected, change the destination to lowercase and sign out / sign back in to refresh policy.</div>
+    <ul class="blist">
+      <li>Use bypass rules for: certificate-pinned apps, mutual TLS apps, Microsoft 365, IdP auth endpoints, Slack/Zoom/Teams processes</li>
+      <li>Scope by: Program (process name), Web Category, Domain, Custom URL</li>
+      <li>After any policy rule change: sign out of agent and sign back in to force policy refresh</li>
+    </ul>
+    <div class="g-sub">SSL Inspection — CA Certificate Deployment</div>
+    <table class="gt"><tr><th>Platform</th><th>Deployment</th><th>Verification</th></tr>
+    <tr><td>Windows</td><td>GPO or Intune certificate profile</td><td>certlm.msc &gt; search 'Perimeter81'</td></tr>
+    <tr><td>macOS</td><td>Jamf / MDM profile to Keychain System</td><td>Keychain Access &gt; System &gt; Certificates</td></tr>
+    <tr><td>iOS / Android</td><td>MDM as trusted CA profile</td><td>Device Settings &gt; Certificates</td></tr>
+    <tr><td>Linux</td><td colspan="2">SWG not currently available on Linux</td></tr>
+    </table>`
+  },
+  'agent-issues':{ey:'Section 4',ti:'Agent — Login &amp; Connectivity Issues',de:'Common agent errors, platform-specific fixes, and the self-resolution sequence.',html:`
+    <div class="g-sub">Login Error Reference</div>
+    <table class="gt"><tr><th>Error</th><th>Cause</th><th>Fix</th></tr>
+    <tr><td><code>Failed to register device certificate</code></td><td>System clock out of sync</td><td>Sync immediately: Windows: Settings &gt; Date &amp; Time &gt; Sync Now. macOS: System Settings &gt; General &gt; Date &amp; Time</td></tr>
+    <tr><td>Agent stuck connecting</td><td>Stale state, port blocked, or protocol issue</td><td>Switch protocol (WireGuard → OpenVPN). Restart agent. Restart device. Test on mobile hotspot.</td></tr>
+    <tr><td>NOT_IN_ACCESS_GROUP</td><td>IdP group name mismatch (case-sensitive). <strong>Note: visible in Devices &gt; Device Inventory (User Status column) or inside a HAR file</strong> — the agent UI shows a generic "access denied" message. You must capture a HAR to see the real error code.</td><td>1) Capture a HAR file: Chrome → F12 → Network tab → reproduce the login → right-click any request → Save all as HAR. Search the HAR for "NOT_IN_ACCESS_GROUP".<br>2) Check Team &gt; Groups — verify the group name matches the IdP exactly, including capitalisation.<br>3) Do not select "All Users" group — use the specific group name.</td></tr>
+    <tr><td>Device limit reached</td><td>5+ devices registered</td><td>Team &gt; Members &gt; ... &gt; Manage Devices — remove stale entries</td></tr>
+    <tr><td>Blocked Account</td><td>10 consecutive failed logins</td><td>Team &gt; Members &gt; ... &gt; Unblock</td></tr>
+    <tr><td>Web portal works, agent doesn't</td><td>Windows service stopped; macOS extension not approved; concurrent VPN</td><td>Check services.msc (Windows); Login Items (macOS); ensure no other VPN running</td></tr>
+    </table>
+    <div class="g-sub">Self-Resolution Sequence</div>
+    <div class="steps">
+      <div class="s-step"><div class="s-num">1</div><div class="s-body"><strong>Sync device clock</strong> — most certificate, auth, and DPC issues stem from clock drift</div></div>
+      <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Restart agent</strong> — quit completely (not just close the window), wait 10 seconds, relaunch</div></div>
+      <div class="s-step"><div class="s-num">3</div><div class="s-body"><strong>Restart the device</strong> — clears stale network state, especially after sleep/wake cycles</div></div>
+      <div class="s-step"><div class="s-num">4</div><div class="s-body"><strong>Reinstall using a freshly downloaded installer</strong> — corrupted installations cause a significant proportion of persistent issues</div></div>
+      <div class="s-step"><div class="s-num">5</div><div class="s-body"><strong>Run connectivity tests</strong> — confirm required ports are reachable (see Firewall &amp; Ports)</div></div>
+    </div>
+    <div class="g-sub">Platform-Specific Fixes — Windows</div>
+    <table class="gt"><tr><th>Issue / Error</th><th>Fix</th></tr>
+    <tr><td>Service not running</td><td>services.msc &gt; Harmony SASE / Perimeter 81 service &gt; Start</td></tr>
+    <tr><td>UTC+x timezone causes stuck-on-connecting / "Opening SDP Channel"</td><td>Change to a named timezone (EST, CST, PST, etc.) — UTC+x offset causes OpenSSL to fail certificate generation. Uninstall and reinstall the agent after changing.</td></tr>
+    <tr><td>"Windows Service Failed to start in time"</td><td>Competing .NET versions on the PC. Fix: uninstall Perimeter 81, uninstall all existing .NET / .NET Framework / SDK versions, reboot, reinstall the agent.</td></tr>
+    <tr><td>"SSL connection could not be established"</td><td>TLS version issue. Verify TLS 1.2+ is enabled: Internet Options &gt; Advanced &gt; Security. Test connectivity: <code>curl -iv https://api.perimeter81.com/</code>. Required cipher: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256.</td></tr>
+    <tr><td>Split tunnel FQDN not routing</td><td>Add BOTH the wildcarded and plain domain (e.g. <code>*.zoom.us</code> AND <code>zoom.us</code>). Then ping or browse to the FQDN once so the agent resolves it, then retry.</td></tr>
+    <tr><td>Subscription expired / ERR_EXPIRED_ADDON</td><td>Check that the number of active gateways does not exceed the license count. Example: 1 GW license + 2 active gateways = error. Remove an extra GW or add a license.</td></tr>
+    <tr><td>Ping to LAN fails with "General Failure"</td><td>Try enabling the LAN block feature flag in the portal, then disabling it.</td></tr>
+    <tr><td>BSOD</td><td>Update agent to version 10.5.1.1790 or later.</td></tr>
+    <tr><td>Not supported</td><td>Agent does not run on Windows Server or virtual machine environments.</td></tr>
+    </table>
+    <div class="g-sub">Platform-Specific Fixes — macOS</div>
+    <table class="gt"><tr><th>Issue / Error</th><th>Fix</th></tr>
+    <tr><td>Network Extension not approved</td><td>System Settings &gt; General &gt; Login Items &amp; Extensions &gt; Network Extensions — toggle Harmony SASE on. If "waiting for user", click the toggle.</td></tr>
+    <tr><td>Verify extension status from Terminal</td><td><code>systemextensionsctl list</code> — look for <code>[activated enabled]</code>. States: "waiting for user" = needs approval; "activated disabled" = was turned off; missing = policy restriction.</td></tr>
+    <tr><td>Extension blocked by corporate MDM policy</td><td>Run <code>spctl kext-consent status</code> — must return "Kernel Extension User Consent: ENABLED". If disabled, users will not receive the approval prompt. Raise with MDM administrator.</td></tr>
+    <tr><td>Filters missing under Network &gt; Filters (SWG/split tunnel not working)</td><td>Network extension is not active. Check System Settings &gt; Login Items &gt; Network Extensions. Remove any unnamed "proxy" entries. Uninstall using the official uninstall script, then reinstall latest agent.</td></tr>
+    <tr><td>Sequoia 15.0+ — firewall blocking SASE post-upgrade</td><td>System Settings &gt; Network &gt; Firewall &gt; Options — check for block rule on Harmony SASE service; allow incoming connections. Mainly affects MDM-deployed Macs.</td></tr>
+    <tr><td>Cloned disk image — identity conflict</td><td>Uninstall agent → Keychain Access → search "appIdentifier" → delete entry for com.perimeter81d → reinstall fresh.</td></tr>
+    <tr><td>"Trust anchor certificate is missing" (Homebrew OpenSSL)</td><td>Run <code>which openssl</code> — must return <code>/usr/bin/openssl</code>. If a Homebrew path is returned, remove the Homebrew OpenSSL version. Also see: macOS M4 has a separate Jira (P81-75099) for this error even with correct LibreSSL.</td></tr>
+    <tr><td>Connect then immediate disconnect loop — Snowplow DB corrupted</td><td>Check logs for <code>SnowPlowAnalyticsService</code> errors. Fix:<br>1) <code>killall Perimeter\ 81</code><br>2) <code>sudo launchctl unload -w /Library/LaunchDaemons/com.perimeter81d.plist</code><br>3) <code>sudo rm /var/root/Library/snowplow/snowplowEvents-default.sqlite</code><br>Then relaunch the agent.</td></tr>
+    <tr><td>Grammarly / JAMF Self-Service not working while agent connected</td><td>CrowdStrike + SWG conflict — the two create a loop that stops services. Workaround: disable SWG for affected users, or add a bypass rule for the affected process.</td></tr>
+    <tr><td>SWG block page not showing (web filtering not enforcing)</td><td>Agent extension may not be active. Check Network Extensions and approve. If still failing: uninstall fully using the uninstall script, reinstall from a freshly downloaded copy.</td></tr>
+    </table>
+    <div class="g-sub">Platform-Specific Fixes — iOS &amp; Android</div>
+    <table class="gt"><tr><th>Issue</th><th>Fix</th></tr>
+    <tr><td>iOS stuck on logo / loading screen</td><td>Three workarounds (try in order):<br>1) Open Chrome on device → navigate to sign-in URL for your data residency region (US: app.perimeter81.com/sign-in, EU: app.eu.sase.checkpoint.com/sign-in)<br>2) Sign out the device from portal Device Inventory, retry login via Chrome URL<br>3) Settings → iCloud → Passwords &amp; Keychain → disable iCloud Keychain → uninstall app → reinstall → try login</td></tr>
+    <tr><td>iOS loses Wi-Fi connection to hotspot when agent starts</td><td>Upgrade to latest iOS and macOS agent versions.</td></tr>
+    <tr><td>iOS app doesn't stay connected in background</td><td>Enable Auto Reconnect in the user profile: Portal &gt; Members &gt; User Profiles &gt; [Profile] &gt; Agent Configuration &gt; iOS &gt; Auto Reconnect — set to Enabled. Also ensure the device is on the latest agent version.</td></tr>
+    </table>
+    <div class="g-sub">Platform-Specific Fixes — Linux</div>
+    <table class="gt"><tr><th>Issue</th><th>Fix</th></tr>
+    <tr><td>Agent cannot launch from browser</td><td>Launch from terminal: <code>/opt/Perimeter81/perimeter81 "COPIED_LINK"</code> (use the link from the "Try again" option in the browser, in quotes). Then run: <code>sudo update-desktop-database -v /usr/share/applications</code></td></tr>
+    <tr><td>/etc/resolv.conf is read-only</td><td>Agent requires write access to /etc/resolv.conf for DNS. Change permissions: <code>chmod 644 /etc/resolv.conf</code></td></tr>
+    <tr><td>Docker only works on OpenVPN (not WireGuard/IKEv2)</td><td>WireGuard and IKEv2 use MTU &lt; 1500 which breaks Docker networking. Set MTU in Docker: add <code>"mtu": 1350</code> to <code>/etc/docker/daemon.json</code> and restart Docker.</td></tr>
+    </table>`
+  },
+  'tunnel-ts':{ey:'Section 4',ti:'IPsec &amp; Connector Troubleshooting',de:'Diagnosing tunnel down, traffic not passing, flapping, BGP, and Connector problems.',html:`
+    <div class="callout c-note"><strong>Before troubleshooting:</strong> Check Operational Events log during the problem period — Portal &gt; Monitor &amp; Logs &gt; Operational Events. Also verify Routes Table: Networks &gt; [Network] &gt; options &gt; Routes Table.</div>
+    <div class="g-sub">Tunnel Shows as Down</div>
+    <table class="gt"><tr><th>Check</th><th>Action</th></tr>
+    <tr><td>Parameter mismatch (most common)</td><td>Verify IKEv2, AES-256, SHA-256, DH Group 14 (Phase 1 &amp; PFS), lifetimes, and PSK — all must be identical on both peers. IKE Mode = Main Mode.</td></tr>
+    <tr><td>Remote peer IP changed</td><td>Update in portal: Networks &gt; Sites &gt; [Site] &gt; Edit</td></tr>
+    <tr><td>SonicWall Gen7 / SonicOS 7+</td><td>Use IKEv1 — IKEv2 is unstable on this firmware version</td></tr>
+    <tr><td>PSK mismatch</td><td>Re-enter on both sides — check trailing whitespace and encoding differences</td></tr>
+    <tr><td>Ports blocked</td><td>UDP 500 and UDP 4500 open bidirectionally. Remote must support Site-to-Site (not passthrough).</td></tr>
+    </table>
+
+    <div class="g-sub">BGP Redundant Tunnels — Portal-Level Checks</div>
+    <ul class="blist">
+      <li>Verify BGP neighbor state = <strong>Established</strong> (Active or Idle = BGP not up)</li>
+      <li>Confirm BGP AS numbers match on both sides — SASE default ASN is <strong>64512</strong></li>
+      <li>Verify subnets in SASE Routes Table match what remote device is advertising exactly — /24 ≠ /32, no aggregation is assumed</li>
+      <li>Check prefix lists on remote device are not blocking routes advertised by SASE</li>
+      <li>After failover: BGP reconvergence may take up to the configured hold-time</li>
+    </ul>
+
+    <div class="g-sub">Connector Diagnostics</div>
+    <code class="cmd">sudo wg show
+<span class="comment"># Check: latest handshake &lt; 2 min ago, transfer bytes &gt; 0</span>
+sudo systemctl status wg-quick@&lt;interface&gt;</code>
+    <table class="gt"><tr><th>Issue</th><th>Fix</th></tr>
+    <tr><td>Not connecting / offline</td><td>Check outbound UDP 8000; verify service running; if public IP changed, reconfigure in portal and re-run install script</td></tr>
+    <tr><td><strong>Sudden outage — internal LAN IP changed</strong></td><td>The connector's iptables rules reference the IP at install time. Run <code>ifconfig</code> to get the current IP, then <code>cat /etc/systemd/system/wg-quick*/override.conf</code> to see the hardcoded IP. If they differ, edit the override file (<code>vim /etc/systemd/system/wg-quick*/override.conf</code>), replace the old IP, save with <code>:wq!</code>, then reload: <code>sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart wg-quick@&lt;interface&gt;</code>. <strong>Set a static internal IP to prevent recurrence.</strong></td></tr>
+    <tr><td>Online but traffic not passing</td><td>Confirm subnets in portal Routes Table; enable IP forwarding (<code>net.ipv4.ip_forward=1</code>); check local firewall on connector server</td></tr>
+    <tr><td>AWS EC2</td><td>Disable source/destination checks on the EC2 instance network interface</td></tr>
+    </table>`
+  },
+  'dns-ts':{ey:'Section 4',ti:'DNS &amp; Secure Internet Access Issues',de:'Diagnosing Private DNS failures and Internet Access Policy problems.',html:`
+    <div class="g-sub">Private DNS Troubleshooting</div>
+    <ul class="blist">
+      <li>Confirm Private DNS enabled: <strong>Networks &gt; [Network] &gt; Private DNS</strong> — verify internal DNS server IP</li>
+      <li>Verify <strong>"Use VPN Interface DNS"</strong> is on (Agent UI &gt; Settings &gt; General or Portal: Members &gt; User Profiles &gt; Agent Configuration)</li>
+      <li>DNS server must be reachable on port 53 (UDP AND TCP) from the VPN address range</li>
+      <li>DNS server subnet must be included in the site-to-site tunnel route</li>
+      <li>DNS over TLS: disable if DNS server does not support port 853</li>
+      <li>Windows domain-joined: Active Directory Group Policy may override DNS settings pushed by the agent</li>
+    </ul>
+    <div class="g-sub">DNS Diagnostic Commands</div>
+    <code class="cmd"><span class="comment"># Windows — query specific DNS server</span>
+nslookup hostname.company.com &lt;dns-server-ip&gt;
+
+<span class="comment"># macOS / Linux — query specific DNS server</span>
+dig @&lt;dns-server-ip&gt; hostname.company.com</code>
+    <div class="callout c-note"><strong>Collect output both connected AND disconnected.</strong> The difference identifies exactly where resolution is failing. Include both outputs in any support case.</div>
+    <div class="g-sub">Internet Access Policy Issues</div>
+    <ul class="blist">
+      <li>Test: does the site load when the agent is DISCONNECTED from the VPN? If yes, it <em>may still</em> be SASE — the agent can intercept traffic even when not actively tunnelling. To fully rule out SASE, <strong>quit the app entirely</strong> and retest.</li>
+      <li>Create a test bypass rule (add both <code>domain.com</code> and <code>*.domain.com</code>) with <strong>HTTPS Inspection set to Bypass</strong> — if the issue resolves, HTTPS inspection is confirmed as the cause, not just the URL category</li>
+      <li><strong>Bypass rule destinations are CASE-SENSITIVE — must be lowercase</strong></li>
+      <li>After changing bypass rules: sign out of agent and sign back in to force policy refresh</li>
+      <li>Third-party DNS filtering or SSL inspection on endpoint conflicts with Internet Access Policy — test with temporarily disabled</li>
+    </ul>`
+  },
+  'escalation':{ey:'Section 4',ti:'Escalation Criteria &amp; Severity Definitions',de:'When to open a ticket, how to classify severity, and what to always include.',html:`
+    <div class="callout c-danger"><strong>Escalate Immediately (Sev 1):</strong> Multiple users across offices/regions affected simultaneously; gateway unreachable or not in portal; entire network segment down; traffic may not be encrypted; any suspected security incident.</div>
+    <div class="callout c-warn"><strong>Escalate After Triage (Sev 2/3):</strong> Issue reproducible but unresolved after following this guide; affects 3+ users; a recent change correlates with start of issue.</div>
+    <div class="callout c-success"><strong>Self-Resolve First:</strong> Single user cannot connect; SIA blocking unexpected site; DPC failing for one user; hostname not resolving; performance for one user.</div>
+    <div class="g-sub">Check Point Severity Definitions</div>
+    <table class="gt"><tr><th>Severity</th><th>Definition</th><th>Response Time</th></tr>
+    <tr><td><span class="badge b-red">Sev 1 — Critical</span></td><td>Complete loss of service, no workaround</td><td>30 minutes — 24/7</td></tr>
+    <tr><td><span class="badge b-orange">Sev 2 — High</span></td><td>Major impairment, partial workaround exists</td><td>2 hours — business hours</td></tr>
+    <tr><td><span class="badge b-blue">Sev 3 — Medium</span></td><td>Limited impairment, workaround available</td><td>4 hours — business hours</td></tr>
+    <tr><td><span class="badge b-green">Sev 4 — Low</span></td><td>General question / minimal impact</td><td>4 hours — business hours</td></tr>
+    </table>
+    <div class="callout c-note"><strong>Agent Log Collection:</strong> Always include agent logs with any support case. Collect via Agent UI &gt; Support &gt; Collect Logs, or follow the manual collection guide when the UI is unavailable: <a href="https://support.perimeter81.com/docs/manual-log-collection" target="_blank">support.perimeter81.com/docs/manual-log-collection</a></div>
+    <div class="g-sub">Standard Ticket Information</div>
+    <table class="gt"><tr><th>Field</th><th>Where to Find It</th><th>Example</th></tr>
+    <tr><td>Tenant ID</td><td>Portal URL subdomain</td><td>company.perimeter81.com</td></tr>
+    <tr><td>Agent version</td><td>Top-right corner of the agent window, or Portal: Devices &gt; Device Inventory (Agent Version column)</td><td>win_12.6.0.8419 / osx_12.6.0.8419</td></tr>
+    <tr><td>OS and version</td><td>System settings</td><td>Windows 11 22H2 / macOS Sequoia 15.1</td></tr>
+    <tr><td>Data residency region</td><td>Portal URL</td><td>US / EU / AU / IN / CA</td></tr>
+    <tr><td>Exact error message</td><td>Screenshot at time of error</td><td>"Failed to register device certificate"</td></tr>
+    <tr><td>Hotspot test result</td><td>Test on mobile hotspot</td><td>Works on hotspot, fails on corp Wi-Fi</td></tr>
+    <tr><td>Agent log bundle</td><td>Agent &gt; Support &gt; Collect Logs, or use the <a href="https://support.perimeter81.com/docs/manual-log-collection" target="_blank">manual collection guide</a> if UI is unavailable</td><td>Attach .zip to ticket</td></tr>
+    </table>`
+  },
+    'reference':{ey:'Appendix',ti:'Quick Reference',de:'Common errors at a glance, port reference, and KB links.',html:`
+    <div class="g-sub">Common Errors — First Steps</div>
+    <table class="gt"><tr><th>Error / Symptom</th><th>Likely Cause</th><th>First Action</th></tr>
+    <tr><td>Failed to register device certificate</td><td>Clock out of sync</td><td>Sync device clock immediately</td></tr>
+    <tr><td>Agent stuck connecting</td><td>Port blocked, stale state</td><td>Switch protocol → restart agent → test hotspot</td></tr>
+    <tr><td>NOT_IN_ACCESS_GROUP</td><td>Group name capitalisation</td><td>Check Team &gt; Groups vs. IdP exactly</td></tr>
+    <tr><td>Bypass rule not respected</td><td>Case-sensitive destination</td><td>Make destination lowercase; sign out/in</td></tr>
+    <tr><td>macOS fails after OS upgrade</td><td>Firewall blocking SASE</td><td>System Settings &gt; Network &gt; Firewall &gt; allow SASE</td></tr>
+    <tr><td>Internal hostname not resolving</td><td>Private DNS misconfigured</td><td>Check Private DNS + Use VPN Interface DNS</td></tr>
+    <tr><td>Tunnel IKE_SA replaced events</td><td>Normal IPsec rekey</td><td>No action needed</td></tr>
+    <tr><td>SonicWall tunnel unstable</td><td>IKEv2 bug on SonicOS 7</td><td>Set to IKEv1 on SonicWall side</td></tr>
+    </table>
+    <div class="g-sub">Key KB Resources</div>
+    <table class="gt"><tr><th>Topic</th><th>URL</th></tr>
+    <tr><td>Quick Start Guide</td><td>support.perimeter81.com/docs</td></tr>
+    <tr><td>Agent Downloads</td><td>support.perimeter81.com/docs/downloading-the-agent</td></tr>
+    <tr><td>Device Posture Check</td><td>support.perimeter81.com/docs/device-posture-check</td></tr>
+    <tr><td>Internet Access Policy</td><td>support.perimeter81.com/docs/secure-web-gateway</td></tr>
+    <tr><td>Certificate Pinning Bypass</td><td>support.perimeter81.com/docs/certificate-pinning</td></tr>
+    <tr><td>WireGuard Connector</td><td>support.perimeter81.com/docs/configuring-a-wireguard-connector</td></tr>
+    <tr><td>HAR File Collection</td><td>support.perimeter81.com/docs/generating-a-har-file-for-troubleshooting</td></tr>
+    <tr><td>Platform Status</td><td>status.perimeter81.com</td></tr>
+    <tr><td>Admin Guide</td><td>docs.checkpoint.com/harmony-sase</td></tr>
+    <tr><td>Support Portal</td><td>supportcenter.checkpoint.com</td></tr>
+    </table>`
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+// TROUBLESHOOTER FLOWS
+// ═══════════════════════════════════════════════════════
+const SYMPTOMS=[
+  {id:'agent-connect',icon:'🔌',title:'Agent won\'t connect',desc:'Stuck connecting, spinning, or repeated disconnections',
+   flow:[{q:'Is the system clock synchronised on the affected device?',body:'Clock drift is the #1 cause of agent failures. Windows: Settings &gt; Date &amp; Time &gt; Sync Now. macOS: System Settings &gt; General &gt; Date &amp; Time.',
+    yes:{q:'Does the issue occur on a mobile hotspot too?',body:'Switching to a mobile hotspot bypasses the corporate firewall. This is the key scoping question.',
+     yes:{result:'Device-specific issue — work through these steps in order before escalating.',detail:'<strong>Step 1 — Switch protocol</strong><br>Agent Settings &gt; Protocols &gt; switch from WireGuard to OpenVPN (or vice versa). If "Default" is set by the admin, ask the admin to change the default protocol in the portal under Devices &gt; User Configuration.<br><br><strong>Step 2 — Verify connectivity to required endpoints</strong><br>Confirm the device can reach the following (see the <a href=\"https://support.perimeter81.com/docs/can-t-connect-perimeter-s-internet-connection-troubleshooting-guide\" target=\"_blank\">full KB article</a> for the complete list):<br>• <code>api.perimeter81.com</code> (or your region equivalent)<br>• <code>sdpv2-agent-ws.perimeter81.com</code> (agents v11.7+)<br>• <code>sdp.perimeter81.com</code> (agents pre-v11.7, port 5050)<br>• <code>auth.perimeter81.com</code><br>• <code>*.auth0.com</code><br><br>Windows: <code>tnc api.perimeter81.com -port 443</code><br>macOS: <code>nc -zv api.perimeter81.com 443</code><br><br><strong>Step 3 — Restart agent</strong><br>Quit the application completely (not just close the window), wait 10 seconds, relaunch.<br><br><strong>Step 4 — Restart the device</strong><br>Clears stale network state — especially after sleep/wake cycles or network switches.<br><br><strong>Step 5 — Reinstall from a freshly downloaded installer</strong><br>Download the latest agent from the portal or from <a href=\"https://support.perimeter81.com/docs/downloading-the-agent\" target=\"_blank\">support.perimeter81.com/docs/downloading-the-agent</a>. Corrupted installations are more common than they appear.',escalate:'If all steps above are exhausted and the issue persists: open Sev 3 case. Include: agent version, OS version, exact error message, whether it works on hotspot, and agent logs. Collect logs manually: <a href=\"https://support.perimeter81.com/docs/manual-log-collection\" target=\"_blank\">support.perimeter81.com/docs/manual-log-collection</a>'},
+     no:{result:'Corporate network is blocking VPN ports.',detail:'Run connectivity tests:<br><br>Windows: <code>tnc sdpv2-agent-ws.perimeter81.com -port 443</code><br>macOS: <code>nc -zv sdpv2-agent-ws.perimeter81.com 443</code><br><br>For pre-v11.7 agents, also test: <code>tnc sdp.perimeter81.com -port 5050</code><br><br>Share results with your network team to unblock the required destinations.',escalate:'If ports are confirmed open and the issue persists, open Sev 3 case with agent logs and connectivity test output. To collect agent logs manually: support.perimeter81.com/docs/manual-log-collection'}},
+    no:{result:'Sync the clock first — this resolves the majority of agent failures.',detail:'Windows: Settings &gt; Date &amp; Time &gt; Sync Now<br>macOS: System Settings &gt; General &gt; Date &amp; Time<br><br>After syncing, restart the agent completely.',escalate:'If syncing the clock does not resolve it, continue to check port connectivity.'}}]},
+  {id:'login-fail',icon:'🔐',title:'Login / auth error',desc:'Error on sign-in, wrong group, blocked account',
+   flow:[{q:'Is the user being redirected to their IdP (Okta, Azure AD, etc.) instead of seeing a password field?',body:'When a user types their email on the sign-in screen, SASE checks if the email domain matches any <strong>Domain Alias</strong> configured under Settings &gt; Identity Providers. If it matches, the password field disappears and authentication goes through the IdP — not the SASE database credentials.<br><br>If the user needs to sign in with their SASE database credentials instead (e.g. for admin access or testing), they must click <strong>"Sign in using email and password"</strong> at the bottom of the sign-in screen to bypass IdP redirect.',
+    yes:{label:'Yes — they want IdP login but it is failing',q:'Does the login fail with a "not in group" or access denied message?',body:'NOT_IN_ACCESS_GROUP does not appear in the agent UI — it only shows up inside a HAR file. You need to capture one to confirm the exact error.',
+     yes:{result:'NOT_IN_ACCESS_GROUP — check Device Inventory first, then capture a HAR to confirm.',detail:'<strong>Step 1 — Check Device Inventory (workspace admins)</strong><br>Portal: Devices &gt; Device Inventory — find the affected user device and check the <strong>User Status</strong> column. NOT_IN_ACCESS_GROUP will show here without needing a HAR file.<br><br><strong>Step 2 — Capture a HAR file (if Device Inventory is inconclusive)</strong><br>The error also appears inside a HAR file from the browser login attempt:<br>1) Open Chrome on the affected device<br>2) Press F12 → go to the <strong>Network</strong> tab → ensure recording is on (red dot)<br>3) Reproduce the login attempt from start to finish<br>4) Right-click any request → <strong>Save all as HAR with content</strong><br>5) Open the HAR file in a text editor and search for <code>NOT_IN_ACCESS_GROUP</code><br><br><strong>Fix:</strong><br>1) Portal: Team &gt; Groups — verify the group name exactly matches what the IdP sends (case-sensitive, character-by-character)<br>2) Do not select "All Users" group — use the specific named group<br>3) Admin: Team &gt; Members &gt; [user] &gt; Sign Out All Devices, then have the user retry'},
+     no:{result:'IdP login is failing for another reason.',detail:'1) Verify IdP is reachable and SAML/OIDC config has not changed recently (Settings &gt; Identity Providers)<br>2) Test a direct login via the IdP portal to rule out an IdP-side issue<br>3) Check if the account is blocked: Team &gt; Members &gt; ... &gt; Unblock (triggered by 10 consecutive failed logins)',escalate:'If IdP is confirmed working and the issue persists, open Sev 3 case with: exact error message, authentication method (SAML/OIDC), and agent logs. Collect logs: support.perimeter81.com/docs/manual-log-collection'}},
+    no:{label:'No — they want to use SASE database credentials',result:'Domain alias is redirecting them to IdP. To use SASE database credentials instead, click "Sign in using email and password" at the bottom of the sign-in screen.',detail:'When a user types an email whose domain matches a configured Domain Alias, SASE automatically redirects to the IdP and hides the password field. This is expected behaviour.<br><br>To sign in with SASE database credentials:<br>1) On the sign-in screen, click <strong>"Sign in using email and password"</strong> (link at the bottom)<br>2) Enter email and SASE password directly<br><br>If the user cannot see this option, ensure they are on the correct workspace URL. If they need their SASE password reset, an admin can do this under Team &gt; Members.',escalate:''}}]},
+  {id:'no-resource',icon:'🔒',title:'Can\'t reach internal resource',desc:'VPN connected but a server, app, or file share is unreachable',
+   flow:[{q:'Is the user connected to the correct SASE Network?',body:'Check agent UI for the Network name. Portal: Monitor &gt; Active Sessions — confirm gateway/network assignment.',
+    yes:{q:'Are the site-to-site tunnels on this Network healthy?',body:'The resource is behind a site-to-site tunnel — if the tunnel is down, nothing behind it is reachable regardless of routing or firewall rules.<br><br>Check tunnel state: <strong>Networks &gt; [Network] &gt; Gateways &gt; [Gateway] &gt; Tunnels</strong> — all tunnels serving this resource should show as <strong>Active</strong>.<br><br>For Perimeter 81 Connectors: on the Linux server running the connector, run <code>sudo wg show</code> — confirm latest handshake is recent and bytes are transferring.',
+     yes:{q:'Can the resource be reached by its IP address (not hostname)?',body:'Test: <code>ping &lt;IP&gt;</code> or <code>nc -zv &lt;IP&gt; &lt;port&gt;</code> if ICMP is blocked.',
+      yes:{q:'Does the page load but with missing components (broken images, missing styles, scripts)?',body:'Some elements load but others fail — this is different from the resource being completely unreachable.',
+      yes:{result:'Host header issue — web server rejecting requests from the SASE FQDN.',detail:'ZTNA apps use a SASE-assigned FQDN (*.pzero.perimeter81.com). Web servers that check the Host header may reject component requests.<br><br><strong>Fix — add a Custom Host Header:</strong><br>1) Open the ZTNA app settings<br>2) Scroll to Custom HTTP Headers<br>3) Name = <code>Host</code>, Value = the internal FQDN/hostname of the server<br>4) Apply and retest<br><br><strong>If CORS errors appear or the app needs requests from your own domain:</strong> configure a URL Alias — create a CNAME on your domain pointing to the SASE FQDN, upload your SSL cert in Settings &gt; Certificate Manager, then enable URL Alias in the app settings.<br><br>KB: <a href="https://support.perimeter81.com/docs/how-to-add-an-http-https-application" target="_blank">how-to-add-an-http-https-application</a> | <a href="https://support.perimeter81.com/docs/360025534473" target="_blank">URL Aliasing KB</a>'},
+      no:{result:'DNS issue — hostname not resolving.',detail:'1) Confirm Private DNS enabled: Networks &gt; [Network] &gt; Private DNS<br>2) Verify "Use VPN Interface DNS" is on in agent settings<br>3) Test: <code>nslookup hostname.company.com &lt;dns-server-ip&gt;</code>',escalate:'Open Sev 3 case with nslookup output connected and disconnected.'}},
+      no:{result:'Routing or firewall issue — tunnel is up but traffic not reaching resource.',detail:'1) Check Routes Table: Networks &gt; [Network] &gt; options &gt; Routes Table — confirm resource subnet is listed<br>2) Check for subnet overlap with SASE network subnet<br>3) Verify the remote router has a static route pointing the SASE subnet back through the tunnel interface<br>4) Verify resource-side firewall allows inbound from the SASE subnet',escalate:'Open Sev 3 case with: Network name, resource IP, SASE subnet, routes table screenshot, tunnel state screenshot.'}},
+     no:{label:'Tunnel is down or unhealthy',result:'Fix the tunnel first — the resource is unreachable because its site-to-site connection is down.',detail:'<strong>IPsec tunnel down?</strong> Go to the IPsec Tunnel Troubleshooting flow for step-by-step diagnosis.<br><br><strong>Perimeter 81 Connector down?</strong> Go to the Connector Offline flow.<br><br>Common quick checks:<br>1) Portal: Networks &gt; [Network] &gt; Gateways — confirm the gateway itself is online<br>2) IPsec: verify remote peer IP has not changed (Networks &gt; Sites &gt; [Site] &gt; Edit)<br>3) Connector: <code>sudo systemctl status wg-quick@&lt;interface&gt;</code> on the Linux server<br>4) Check Operational Events for tunnel errors: Portal &gt; Monitor &amp; Logs &gt; Operational Events',escalate:'If the tunnel cannot be restored after basic checks, open Sev 2 case — users cannot reach internal resources until the tunnel is restored.'}},
+    no:{result:'User is connected to the wrong Network.',detail:'Disconnect and reconnect, selecting the correct Network from the agent UI.',escalate:''}}]},
+  {id:'tunnel-down',icon:'🔗',title:'IPsec tunnel is down',desc:'Site-to-site tunnel showing as down or unstable',
+   flow:[{q:'Did the remote device\'s public IP change recently?',body:'A changed public IP is one of the most common causes of sudden tunnel failure after a period of working correctly.',
+    yes:{result:'Update the remote peer IP in the SASE portal.',detail:'Portal: Networks &gt; Sites &gt; [Site Name] &gt; options &gt; Edit<br>Update the Remote Gateway IP to the new public IP and save.',escalate:'If still not coming up after IP update, check Phase 1 parameters and PSK on both sides.'},
+    no:{q:'Does the remote device show the tunnel as up?',body:'Check the remote firewall/router management interface for tunnel state.',
+     yes:{result:'PSK or parameter mismatch.',detail:'1) Re-enter PSK on both sides (check for trailing whitespace)<br>2) Verify all Phase 1/2 parameters match exactly<br>3) Check Operational Events: Portal &gt; Monitor &amp; Logs &gt; Operational Events'},
+     no:{result:'IKE negotiation is failing — parameter mismatch or ports blocked.',detail:'1) Verify IKEv2, AES-256, SHA-256, DH Group 14, lifetimes match on both peers<br>2) Confirm UDP 500 and UDP 4500 open bidirectionally<br>3) SonicWall Gen7 / SonicOS 7+: use IKEv1 instead',escalate:'Open Sev 2/3 case with: remote device make/model/firmware, Phase 1/2 config from both sides, Operational Events screenshot.'}}}]},
+  {id:'connector-down',icon:'⚡',title:'Connector offline',desc:'Perimeter 81 Connector (WireGuard) not connecting',
+   flow:[{q:'Did the connector work before and suddenly stop?',body:'A sudden outage with no external changes often means the connector VM\'s internal LAN IP has changed. The iptables rules baked in at install time reference the original IP.',
+    yes:{q:'Is the WireGuard service running on the Linux server?',body:'Run: <code>sudo systemctl status wg-quick@&lt;interface&gt;</code>',
+     yes:{q:'What does <code>sudo wg show</code> indicate?',body:'Check: latest handshake timestamp (should be &lt; 2 minutes), and transfer bytes (should be &gt; 0 both sides).',
+      yes:{label:'Handshake recent, bytes > 0',result:'Connector is working — routing issue.',detail:'1) Verify subnets in portal Routes Table: Networks &gt; [Network] &gt; options &gt; Routes Table<br>2) Check IP forwarding: <code>cat /proc/sys/net/ipv4/ip_forward</code> — should be 1<br>3) Check local firewall on connector server'},
+      no:{label:'Handshake old or bytes = 0',q:'Has the connector VM\'s internal LAN IP changed?',body:'Run <code>ifconfig</code> and compare the current LAN IP to what is in the override config: <code>cat /etc/systemd/system/wg-quick*/override.conf</code>. If the IPs differ, the internal IP has changed.',
+       yes:{result:'Internal LAN IP changed — update the override config.',detail:'The connector\'s iptables rules were written with the original IP at install time. Fix:<br><br>1) <code>ifconfig</code> — note the current LAN IP<br>2) <code>vim /etc/systemd/system/wg-quick*/override.conf</code><br>3) Replace the old IP with the current one (<code>i</code> to edit, <code>Esc</code> to stop)<br>4) Save: type <code>:wq!</code> and press Enter<br>5) <code>sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart wg-quick@&lt;interface&gt;</code><br><br><strong>Prevent recurrence:</strong> assign a static internal IP — either a DHCP reservation by MAC address, or configure it statically on the Linux network interface.',escalate:'If the override file looks correct and the connector still will not connect, open Sev 3 case with output of sudo wg show, ifconfig, and the override.conf content.'},
+       no:{result:'Connector not maintaining active connection — other cause.',detail:'1) Verify outbound UDP 8000 is open from the connector server<br>2) If server public IP changed: reconfigure in portal and re-run install script<br>3) AWS EC2: disable source/destination checks on instance NIC',escalate:'Open Sev 3 case with: output of sudo wg show, systemd status, server OS, whether public IP recently changed.'}}},
+     no:{result:'WireGuard service not running.',detail:'Start: <code>sudo systemctl start wg-quick@&lt;interface&gt;</code><br>Enable on boot: <code>sudo systemctl enable wg-quick@&lt;interface&gt;</code><br><br>If fails to start: <code>journalctl -u wg-quick@&lt;interface&gt; -n 50</code>',escalate:'If service cannot start, re-run the installation script from portal: Networks &gt; [Network] &gt; [Tunnel] &gt; Configuration.'}},
+    no:{q:'Is the WireGuard service running on the Linux server?',body:'Run: <code>sudo systemctl status wg-quick@&lt;interface&gt;</code>',
+     yes:{result:'Service is running — check outbound connectivity and portal config.',detail:'1) Verify outbound UDP 8000 is open from the connector server<br>2) If server public IP changed: reconfigure in portal and re-run install script (Networks &gt; [Network] &gt; [Tunnel] &gt; Configuration)<br>3) AWS EC2: disable source/destination checks on instance NIC',escalate:'Open Sev 3 case with: output of sudo wg show, systemd service status, server OS/version.'},
+     no:{result:'WireGuard service not running.',detail:'Start: <code>sudo systemctl start wg-quick@&lt;interface&gt;</code><br>Enable on boot: <code>sudo systemctl enable wg-quick@&lt;interface&gt;</code><br><br>If fails to start: <code>journalctl -u wg-quick@&lt;interface&gt; -n 50</code>',escalate:'If service cannot start, re-run the installation script from portal: Networks &gt; [Network] &gt; [Tunnel] &gt; Configuration.'}}}]},
+  {id:'dns-fail',icon:'🔍',title:'DNS not resolving',desc:'Internal hostnames not resolving while connected',
+   flow:[{q:'Is Private DNS configured in the portal?',body:'Check: Networks &gt; [Network] &gt; Private DNS — is a DNS server IP entered and enabled?',
+    yes:{q:'Is "Use VPN Interface DNS" enabled in the agent?',body:'Agent UI &gt; Settings &gt; General, or Portal: Members &gt; User Profiles &gt; Agent Configuration.',
+     yes:{result:'DNS server connectivity or config issue.',detail:'1) Test DNS directly: <code>nslookup hostname.company.com &lt;dns-server-ip&gt;</code><br>2) Confirm DNS server reachable on port 53 (UDP and TCP) from the VPN address range<br>3) Confirm DNS server subnet is in the tunnel route',escalate:'Open Sev 3 case with: nslookup output connected/disconnected, DNS server IP, Private DNS config screenshot.'},
+     no:{result:'Enable "Use VPN Interface DNS".',detail:'Portal: Members &gt; User Profiles &gt; [Profile] &gt; Agent Configuration &gt; Use VPN Interface DNS — toggle on and save. User reconnects the agent.',escalate:''}},
+    no:{result:'Private DNS not configured.',detail:'Configure: Networks &gt; [Network] &gt; Private DNS<br>Enter the internal DNS server IP.<br>Ensure DNS server subnet is accessible through the SASE Network.',escalate:''}}]},
+  {id:'swg-block',icon:'🚫',title:'Site blocked unexpectedly',desc:'Internet Access Policy blocking a site or app that should be allowed',
+   flow:[{q:'Does the site load when the agent is DISCONNECTED?',body:'Disconnect from the VPN and test directly. This confirms whether SASE / Internet Access Policy is the cause.',
+    yes:{q:'Is there a bypass rule configured for this destination?',body:'Check: Internet Access &gt; Bypass Rules.',
+     yes:{result:'Bypass rule not applying — case sensitivity issue.',detail:'Bypass rule destinations must be <strong>lowercase</strong>.<br><br>1) Edit the bypass rule — change destination to all lowercase<br>2) Sign out of agent and sign back in<br>3) Add both forms: <code>domain.com</code> AND <code>*.domain.com</code>',escalate:'If still not working after sign-out/in, open Sev 3 case with bypass rule screenshot and agent logs. To collect agent logs manually: support.perimeter81.com/docs/manual-log-collection'},
+     no:{result:'No bypass rule — add one.',detail:'Internet Access &gt; Bypass Rules &gt; Add New Rule<br>Add destination: <code>domain.com</code> AND <code>*.domain.com</code> (both lowercase)<br>For certificate-pinning apps: also add the process name as program source.<br>After saving: sign out of agent and sign back in.',escalate:''}},
+    no:{q:'Is the site still blocked when the SASE app is completely quit (not just disconnected)?',body:'Quit the Harmony SASE app entirely — not just disconnect — and test the site again. This distinguishes a SASE HTTPS inspection issue from an unrelated block.',
+     yes:{result:'Not a SASE issue — site is blocked independently of SASE.',detail:'The site is blocked even when the SASE app is fully closed, meaning SASE is not the cause. Check: corporate proxy/firewall rules, DNS-level blocking, or the site itself being down. Test on mobile hotspot to confirm.'},
+     no:{result:'SASE HTTPS inspection is blocking the site — add a bypass rule.',detail:'The site loads when the app is fully quit but breaks when connected. This is an HTTPS inspection (SWG) issue even though the site loads when the VPN is "disconnected" (agent still intercepts traffic while connected).<br><br>Fix: add a bypass rule with HTTPS Inspection policy set to <strong>Bypass</strong>:<br>Internet Access &gt; Bypass Rules &gt; Add New Rule<br>1) Set destination to <code>domain.com</code> AND <code>*.domain.com</code> (lowercase)<br>2) Set <strong>HTTPS Inspection</strong> to <strong>Bypass</strong><br>3) Sign out of agent and sign back in<br><br>This is the correct setting when the issue is certificate inspection, not URL category blocking.',escalate:'If adding a bypass rule does not resolve it, open Sev 3 case with agent logs and a HAR file captured while the issue occurs. To collect agent logs manually: support.perimeter81.com/docs/manual-log-collection'}}}]},
+  {id:'dpc-fail',icon:'🛡',title:'DPC / posture check failing',desc:'User blocked from connecting due to device posture failure',
+   flow:[{q:'Does the failure affect one user or multiple users?',body:'',
+    yes:{label:'One user',q:'Which check is failing?',body:'Check: Devices &gt; Device Inventory &gt; select affected device — failure reason is shown.',
+     yes:{label:'AV/EDR not detected',result:'Antivirus/EDR not being detected.',detail:'1) Confirm AV/EDR is installed and running<br>2) Restart the AV/EDR software (some need relaunch after update to be detected)<br>3) For Harmony Endpoint DPC rules: delete rule, save, re-add rule, save again',escalate:'Open Sev 3 case with: DPC rule screenshot, AV/EDR product name and version, agent logs. To collect agent logs manually: support.perimeter81.com/docs/manual-log-collection'},
+     no:{label:'Domain join failing',result:'Domain membership check failing.',detail:'The DPC domain join check verifies that Windows recognises the machine as domain-joined. This requires the user to be actively signed in with a domain account in a <strong>local interactive Windows session</strong>.<br><br>Common causes:<br>1) User is logged into Windows with a local account, not their domain account — have them sign out and sign back in with their domain credentials<br>2) The machine is not actually domain-joined — verify in Windows: Settings &gt; Accounts &gt; Access work or school<br>3) Domain connectivity lost (DC unreachable) — check the machine can reach the domain controller on the network<br><br>Check the exact failure reason in the portal: Devices &gt; Device Inventory &gt; select device.',escalate:'Open Sev 3 case if the machine is confirmed domain-joined and the user is signed in with domain credentials but the check is still failing. Include: DPC rule screenshot, Windows domain join status, agent logs.'}},
+    no:{label:'Multiple users',result:'Rule change or software update changed detection.',detail:'1) Check portal: Devices &gt; Posture Check for recent rule changes<br>2) Review Devices &gt; Device Inventory for patterns in failing check<br>3) Check if a recent OS or security software update correlates with the timing',escalate:'Open Sev 2 case — multiple users blocked impacts business productivity.'}}]},
+  {id:'perf-slow',icon:'🐢',title:'VPN slow / high latency',desc:'Connected but speeds poor or latency very high',
+   flow:[{q:'Does the issue affect multiple users on the same gateway?',body:'Portal: Monitor &gt; Active Sessions — check how many users are on the same gateway.',
+    yes:{label:'Multiple users',result:'Gateway is overloaded — add capacity and consider split tunneling.',detail:'<strong>Gateway capacity check:</strong><br>Portal: Networks &gt; [Network] &gt; Gateways — check active session count. Each gateway handles up to <strong>100 concurrent users</strong> and ~1 Gbps.<br><br><strong>Immediate fix:</strong> Add a second gateway instance in the same region to load-balance users.<br><br><strong>Recommended long-term fix — Enable Split Tunneling:</strong><br>Full-tunnel mode routes ALL user traffic (including general internet browsing) through SASE, consuming gateway capacity and adding latency for non-business traffic. Split tunneling routes only internal/corporate traffic through SASE, dramatically reducing load.<br><br>Configure: Networks &gt; [Network] &gt; ⋯ &gt; Split Tunneling → set to <strong>Include</strong> mode → add only the subnets/FQDNs that need to go through SASE (internal apps, corporate resources). General internet traffic will go direct.',escalate:'If adding a second instance is not possible and the gateway is at capacity, open Sev 3 case.'},
+    no:{label:'One user',result:'Device or network-specific issue.',detail:'1) Disconnect and reconnect to force nearest gateway assignment<br>2) Switch to WireGuard protocol (fastest)<br>3) Test speed on mobile hotspot — if better, corporate ISP/network is the bottleneck',escalate:''}}]}
+];
+
+const SEARCH_INDEX=[
+  {tag:'Error',text:'Failed to register device certificate — sync device clock immediately',go:()=>{showPage('guide');showSection('agent-issues');}},
+  {tag:'Error',text:'NOT_IN_ACCESS_GROUP — group name capitalisation mismatch (case-sensitive)',go:()=>{showPage('guide');showSection('agent-issues');}},
+  {tag:'Error',text:'Device limit reached — remove stale devices in Team > Members',go:()=>{showPage('guide');showSection('agent-issues');}},
+  {tag:'Error',text:'Blocked Account — 10 consecutive failed logins',go:()=>{showPage('guide');showSection('agent-issues');}},
+  {tag:'Port',text:'TCP 5050 — SDP Controller (agents pre-v11.7)',go:()=>{showPage('guide');showSection('firewall-ports');}},
+  {tag:'Port',text:'TCP 443 sdpv2-agent-ws.perimeter81.com — SDP agents v11.7+',go:()=>{showPage('guide');showSection('firewall-ports');}},
+  {tag:'Port',text:'UDP 51821, 8000, 8055 — WireGuard VPN tunnel',go:()=>{showPage('guide');showSection('firewall-ports');}},
+  {tag:'Port',text:'UDP 500, 4500 — IPsec IKE and NAT traversal',go:()=>{showPage('guide');showSection('ipsec-config');}},
+  {tag:'Port',text:'UDP 8000 — Perimeter 81 Connector outbound',go:()=>{showPage('guide');showSection('connector');}},
+  {tag:'Fix',text:'macOS Network Extension not approved — Login Items & Extensions',go:()=>{showPage('guide');showSection('agent-issues');}},
+  {tag:'Fix',text:'macOS Sequoia 15+ firewall blocking SASE after upgrade',go:()=>{showPage('guide');showSection('agent-issues');}},
+  {tag:'Fix',text:'macOS Homebrew OpenSSL conflict — trust anchor certificate missing',go:()=>{showPage('guide');showSection('agent-issues');}},
+  {tag:'Fix',text:'macOS cloned disk image — delete appIdentifier from Keychain',go:()=>{showPage('guide');showSection('agent-issues');}},
+  {tag:'Fix',text:'iOS stuck on logo — use Chrome with region sign-in URL',go:()=>{showPage('guide');showSection('agent-issues');}},
+  {tag:'Fix',text:'Windows UTC+x timezone causes stuck-on-connecting',go:()=>{showPage('guide');showSection('agent-issues');}},
+  {tag:'Fix',text:'SonicWall Gen7 / SonicOS 7 — use IKEv1 not IKEv2',go:()=>{showPage('guide');showSection('tunnel-ts');}},
+  {tag:'Fix',text:'Bypass rule not working — destination must be lowercase (case-sensitive)',go:()=>{showPage('guide');showSection('swg');}},
+  {tag:'Fix',text:'Connector offline — check sudo wg show and outbound UDP 8000',go:()=>{showPage('guide');showSection('tunnel-ts');}},
+  {tag:'Fix',text:'Tunnel flapping IKE_SA replaced — normal IPsec rekey, no action needed',go:()=>{showPage('guide');showSection('tunnel-ts');}},
+  {tag:'Fix',text:'DPC Harmony Endpoint not recognised — delete rule, save, re-add, save',go:()=>{showPage('guide');showSection('ztna-dpc');}},
+  {tag:'Concept',text:'Agent vs Agentless — internet traffic protection difference',go:()=>{showPage('guide');showSection('access-model');}},
+  {tag:'Concept',text:'Internet Access Policy — agent required — SSL inspection, URL filtering, malware protection',go:()=>{showPage('guide');showSection('swg');}},
+  {tag:'Concept',text:'FWaaS rule order — highest-numbered rule fires first',go:()=>{showPage('guide');showSection('policies');}},
+  {tag:'Concept',text:'DPC — do not create separate rules per OS for same group',go:()=>{showPage('guide');showSection('ztna-dpc');}},
+  {tag:'Concept',text:'Network subnet is permanent — cannot change after creation',go:()=>{showPage('guide');showSection('object-model');}},
+  {tag:'Concept',text:'BGP redundant tunnels — check Established state not Active/Idle',go:()=>{showPage('guide');showSection('tunnel-ts');}},
+  {tag:'Concept',text:'Data residency US/EU/AU/IN/CA — different API, SDP, Yarkon endpoints',go:()=>{showPage('guide');showSection('firewall-ports');}},
+  {tag:'Command',text:'tnc sdpv2-agent-ws.perimeter81.com -port 443 (Windows connectivity test)',go:()=>{showPage('guide');showSection('firewall-ports');}},
+  {tag:'Command',text:'nc -zv sdpv2-agent-ws.perimeter81.com 443 (macOS/Linux connectivity test)',go:()=>{showPage('guide');showSection('firewall-ports');}},
+  {tag:'Command',text:'nslookup hostname.company.com <dns-server-ip> (Windows DNS test)',go:()=>{showPage('guide');showSection('dns-ts');}},
+  {tag:'Command',text:'dig @<dns-server-ip> hostname.company.com (macOS/Linux DNS test)',go:()=>{showPage('guide');showSection('dns-ts');}},
+  {tag:'Command',text:'sudo wg show — Connector tunnel state, handshake, transfer bytes',go:()=>{showPage('guide');showSection('tunnel-ts');}},
+  {tag:'Command',text:'sudo systemctl status wg-quick@<interface> — Connector service status',go:()=>{showPage('guide');showSection('tunnel-ts');}},
+  {tag:'Command',text:'ipconfig /flushdns (Windows DNS cache flush)',go:()=>{showPage('guide');showSection('agent-issues');}},
+  {tag:'Command',text:'sudo killall -HUP mDNSResponder (macOS DNS cache flush)',go:()=>{showPage('guide');showSection('agent-issues');}},
+];
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const map={home:0,guide:1,troubleshoot:2};
+  if(id in map) document.querySelectorAll('.nav-item')[map[id]].classList.add('active');
+}
+
+function showSection(id){
+  const d=SECTIONS[id]; if(!d) return;
+  const b=document.getElementById('guideBody');
+  b.innerHTML=`<div class="g-eyebrow">${d.ey}</div><div class="g-title">${d.ti}</div><div class="g-desc">${d.de}</div>${d.html}`;
+  document.querySelectorAll('.toc-item').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.toc-item').forEach(t=>{
+    const oc=t.getAttribute('onclick')||'';
+    if(oc.includes("'"+id+"'")) t.classList.add('active');
+  });
+  b.scrollTop=0;
+}
+
+// ═══════════════════════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════════════════════
+function handleSearch(q){
+  const el=document.getElementById('searchDropdown');
+  if(!q.trim()){el.classList.remove('open');return;}
+  const lower=q.toLowerCase();
+  const hits=SEARCH_INDEX.filter(i=>i.text.toLowerCase().includes(lower)).slice(0,8);
+  if(!hits.length){el.innerHTML='<div class="sd-item"><div class="sd-text" style="color:#888">No results found</div></div>';el.classList.add('open');return;}
+  const esc=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  el.innerHTML=hits.map((h,i)=>`<div class="sd-item" onclick="doSearch(${SEARCH_INDEX.indexOf(h)})"><div class="sd-tag">${h.tag}</div><div class="sd-text">${h.text.replace(new RegExp('('+esc+')','gi'),'<mark>$1</mark>')}</div></div>`).join('');
+  el.classList.add('open');
+}
+function doSearch(i){SEARCH_INDEX[i].go();document.getElementById('searchInput').value='';closeSearch();}
+function closeSearch(){document.getElementById('searchDropdown').classList.remove('open');}
+
+// ═══════════════════════════════════════════════════════
+// TROUBLESHOOTER
+// ═══════════════════════════════════════════════════════
+let activeSym = null;
+let nodeStack = []; // tracks actual node objects per step, not array indices
+
+function renderSymGrid(){
+  document.getElementById('symGrid').innerHTML = SYMPTOMS.map(s =>
+    `<div class="sym-card" id="sym-${s.id}" onclick="startFlow('${s.id}')">
+      <div class="sym-icon">${s.icon}</div>
+      <div class="sym-title">${s.title}</div>
+      <div class="sym-desc">${s.desc}</div>
+    </div>`).join('');
+}
+
+function startFlow(id){
+  activeSym = SYMPTOMS.find(s => s.id === id);
+  nodeStack = [];
+  document.querySelectorAll('.sym-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('sym-' + id).classList.add('active');
+  document.getElementById('tsFlow').classList.add('open');
+  document.getElementById('flowTitle').textContent = activeSym.icon + ' ' + activeSym.title;
+  document.getElementById('flowSteps').innerHTML = '';
+  renderFlowNode(activeSym.flow[0], 0);
+}
+
+function renderFlowNode(node, idx){
+  // Store the node so answerFlow can retrieve it by step index
+  nodeStack[idx] = node;
+
+  const container = document.getElementById('flowSteps');
+  const el = document.createElement('div');
+  el.className = 'flow-step current';
+  el.id = 'fn-' + idx;
+
+  if(node.result !== undefined){
+    el.innerHTML = `
+      <div class="flow-result">
+        <h4>&#10003; Resolution</h4>
+        <p>${node.detail || node.result}</p>
+        ${node.escalate ? `<div class="flow-escalate"><strong>When to escalate:</strong> ${node.escalate}</div>` : ''}
+      </div>`;
+  } else {
+    const yesLbl = node.yes?.label || 'Yes';
+    const noLbl  = node.no?.label  || 'No';
+    const moreLbl = node.no?.more?.label;
+    el.innerHTML = `
+      <div class="flow-step-num">Step ${idx + 1}</div>
+      <div class="flow-step-q">${node.q}</div>
+      ${node.body ? `<div class="flow-step-body">${node.body}</div>` : ''}
+      <div class="flow-btns">
+        <button class="flow-btn flow-btn-yes" onclick="answerFlow(${idx},'yes')">${yesLbl}</button>
+        <button class="flow-btn flow-btn-no"  onclick="answerFlow(${idx},'no')">${noLbl}</button>
+        ${moreLbl ? `<button class="flow-btn flow-btn-alt" onclick="answerFlow(${idx},'more')">${moreLbl}</button>` : ''}
+      </div>`;
+  }
+  container.appendChild(el);
+  el.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+function answerFlow(idx, answer){
+  const el = document.getElementById('fn-' + idx);
+  el.classList.remove('current');
+  el.classList.add('done');
+
+  // Show the chosen answer label in place of buttons
+  const yesBtn = el.querySelector('.flow-btn-yes');
+  const noBtn  = el.querySelector('.flow-btn-no');
+  const altBtn = el.querySelector('.flow-btn-alt');
+  const chosenLabel = answer === 'yes' ? (yesBtn?.textContent || 'Yes')
+                    : answer === 'no'  ? (noBtn?.textContent  || 'No')
+                    : (altBtn?.textContent || answer);
+  el.querySelector('.flow-btns').innerHTML =
+    `<span style="font-size:12px;color:var(--text-light)">&#8594; <strong style="color:var(--grey)">${chosenLabel}</strong></span>`;
+
+  // Look up the actual node object from the stack (not from flow[] by index)
+  const node = nodeStack[idx];
+  if(!node) return;
+
+  const next = answer === 'yes' ? node.yes
+             : answer === 'no'  ? node.no
+             : node.no?.more;
+  if(!next) return;
+
+  renderFlowNode(next, idx + 1);
+}
+
+function resetFlow(){
+  activeSym = null;
+  nodeStack  = [];
+  document.getElementById('flowSteps').innerHTML = '';
+  document.getElementById('tsFlow').classList.remove('open');
+  document.querySelectorAll('.sym-card').forEach(c => c.classList.remove('active'));
+}
+
+// ═══════════════════════════════════════════════════════
+// HOME PAGE
+// ═══════════════════════════════════════════════════════
+function renderErrorGrid(){
+  const errors=[
+    {e:'Failed to register device certificate',f:'Sync device clock immediately',s:'agent-connect'},
+    {e:'NOT_IN_ACCESS_GROUP',f:'Check group name capitalisation in Team > Groups',s:'login-fail'},
+    {e:'Agent stuck connecting / spinning',f:'Switch protocol → restart agent → test hotspot',s:'agent-connect'},
+    {e:'Bypass rule not respected',f:'Destination must be lowercase; sign out/in',s:'swg-block'},
+    {e:'macOS fails after OS upgrade',f:'System Settings > Network > Firewall > allow SASE',s:'agent-connect'},
+    {e:'Internal hostname not resolving',f:'Check Private DNS + Use VPN Interface DNS',s:'dns-fail'},
+    {e:'Tunnel IKE_SA replaced events',f:'Normal IPsec rekey — no action needed',s:'tunnel-down'},
+    {e:'Connector offline',f:'Check wg show + outbound UDP 8000',s:'connector-down'},
+  ];
+  document.getElementById('errorGrid').innerHTML=errors.map(e=>
+    `<div class="err-card" onclick="showPage('troubleshoot');setTimeout(()=>startFlow('${e.s}'),50)">
+      <div class="err-card-err">${e.e}</div>
+      <div class="err-card-fix">&#8594; ${e.f}</div>
+    </div>`).join('');
+}
+
+// INIT
+renderSymGrid();
+renderErrorGrid();
+showSection('overview');
+</script>
+</body>
+</html>
