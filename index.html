@@ -30,7 +30,8 @@
 
 /* ─── LAYOUT ─── */
 html,body{height:100%;background:var(--white);color:var(--text);font-family:var(--font);overflow:hidden;}
-.app{display:grid;grid-template-columns:240px 1fr;grid-template-rows:60px 1fr;height:100vh;overflow:hidden;}
+.app{display:grid;grid-template-columns:240px 1fr;grid-template-rows:60px 1fr;height:100vh;overflow:hidden;transition:grid-template-columns .2s;}
+.app.sidebar-collapsed{grid-template-columns:0 1fr;}
 
 /* ─── TOPBAR ─── */
 .topbar{
@@ -256,6 +257,20 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
 }
 .flow-reset:hover{border-color:var(--grey);color:var(--grey);background:var(--grey-light);}
 
+/* ─── SIDEBAR COLLAPSE ─── */
+.sidebar{transition:width .2s;}
+.sidebar.collapsed{width:0 !important;overflow:hidden;padding:0;border:none;}
+.sidebar-toggle{
+  position:fixed;left:240px;top:50%;transform:translateY(-50%);
+  width:20px;height:48px;background:var(--berry);color:var(--white);
+  border:none;cursor:pointer;font-size:14px;font-weight:700;z-index:100;
+  display:flex;align-items:center;justify-content:center;
+  transition:left .2s,background .15s;
+}
+.sidebar-toggle:hover{background:var(--berry-dark);}
+.sidebar.collapsed ~ .main .sidebar-toggle,
+body.sidebar-collapsed .sidebar-toggle{left:0;}
+
 /* ─── SCROLLBAR ─── */
 ::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-track{background:var(--grey-light);}
@@ -267,6 +282,7 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
 <div class="app">
 
 <!-- TOPBAR -->
+<button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">‹</button>
 <header class="topbar">
   <a class="topbar-logo" href="#" onclick="showPage('home')">
     <!-- Check Point logo — white variant for dark background -->
@@ -321,6 +337,7 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
   <div class="nav-item" onclick="showPage('guide');showSection('ipsec-config')"><span class="n-icon">›</span>IPsec Configuration</div>
   <div class="nav-item" onclick="showPage('guide');showSection('connector')"><span class="n-icon">›</span>P81 Connector</div>
   <div class="nav-item" onclick="showPage('guide');showSection('mdm-deploy')"><span class="n-icon">›</span>MDM Deployment</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('pilot-rollout')"><span class="n-icon">›</span>Pilot &amp; Rollout Guide</div>
 
   <div class="sidebar-section">Guide — Section 3</div>
   <div class="nav-item" onclick="showPage('guide');showSection('policies')"><span class="n-icon">›</span>Policy Framework</div>
@@ -334,13 +351,14 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
   <div class="nav-item" onclick="showPage('guide');showSection('escalation')"><span class="n-icon">›</span>Escalation &amp; Severity</div>
 
   <div class="sidebar-section">Appendix</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('faq')"><span class="n-icon">›</span>FAQ</div>
   <div class="nav-item" onclick="showPage('guide');showSection('reference')"><span class="n-icon">›</span>Quick Reference</div>
 
   <div class="sidebar-footer">
     <p>
-      📚 <a href="https://support.perimeter81.com/docs" target="_blank">KB Docs</a><br>
+      📚 <a href="https://support.checkpoint.com" target="_blank">CP Support KB</a><br>
       🔴 <a href="https://status.checkpoint.com" target="_blank">Status Page</a> (Check Point SASE Services &amp; Regions)<br>
-      ✉️ sase-support@checkpoint.com
+      🎫 <a href="http://support.checkpoint.com" target="_blank">Open a Support Ticket</a>
     </p>
   </div>
 </nav>
@@ -381,7 +399,7 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
 <!-- GUIDE -->
 <div class="page" id="page-guide">
   <div class="guide-layout">
-    <div class="guide-toc">
+    <div class="guide-toc" id="guideToc">
       <div class="toc-sec">Section 1 — Overview</div>
       <div class="toc-item" onclick="showSection('infinity-portal')">Infinity Portal Setup</div>
       <div class="toc-item active" onclick="showSection('overview')">What is Harmony SASE?</div>
@@ -393,6 +411,7 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
       <div class="toc-item" onclick="showSection('ipsec-config')">IPsec Configuration</div>
       <div class="toc-item" onclick="showSection('connector')">P81 Connector</div>
       <div class="toc-item" onclick="showSection('mdm-deploy')">MDM Deployment</div>
+      <div class="toc-item" onclick="showSection('pilot-rollout')">Pilot &amp; Rollout Guide</div>
       <div class="toc-sec">Section 3 — Policies</div>
       <div class="toc-item" onclick="showSection('policies')">Policy Framework</div>
       <div class="toc-item" onclick="showSection('ztna-dpc')">ZTNA &amp; DPC</div>
@@ -403,6 +422,7 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
       <div class="toc-item" onclick="showSection('dns-ts')">DNS &amp; Internet Access Policy</div>
       <div class="toc-item" onclick="showSection('escalation')">Escalation &amp; Severity</div>
       <div class="toc-sec">Appendix</div>
+      <div class="toc-item" onclick="showSection('faq')">FAQ</div>
       <div class="toc-item" onclick="showSection('reference')">Quick Reference</div>
     </div>
     <div class="guide-body" id="guideBody"></div>
@@ -417,6 +437,9 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
       <p>Select the symptom that best matches the issue you are experiencing. You will be guided through a diagnostic flow to identify and resolve the root cause.</p>
     </div>
     <div class="sym-grid" id="symGrid"></div>
+    <div style="margin-bottom:16px;padding:14px 18px;background:var(--grey-light);border:1px solid var(--border);border-left:3px solid var(--berry);">
+      <span style="font-size:13px;color:var(--text-mid);">Looking for a quick answer? Check the <strong><a href="#" onclick="showPage('guide');showSection('faq');return false;" style="color:var(--berry);">FAQ section</a></strong> in the guide for common questions about subnets, connectivity behaviour, and administration.</span>
+    </div>
     <div class="ts-flow" id="tsFlow">
       <div class="flow-title" id="flowTitle"></div>
       <div id="flowSteps"></div>
@@ -464,7 +487,7 @@ const SECTIONS = {
         If no Infinity Portal tenant exists: create one at <a href="https://portal.checkpoint.com/create-account" target="_blank">portal.checkpoint.com/create-account</a> — select the same data residency region as the Harmony SASE workspace (US, EU, AU, IN).<br>
         If a tenant already exists: confirm its data residency matches the SASE workspace. If they differ, either migrate the SASE workspace or create a new Infinity Portal tenant in the matching region.</div></div>
       <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Request workspace association</strong><br>
-        Send an association request to your account manager or to <strong>sase-support@checkpoint.com</strong> with:<br>
+        Send an association request to your account manager or open a ticket at <a href="http://support.checkpoint.com" target="_blank">support.checkpoint.com</a> (User Center) with:<br>
         • Perimeter 81 / Harmony SASE workspace name<br>
         • Infinity Portal account ID<br>
         • Infinity Portal data residency region</div></div>
@@ -609,7 +632,7 @@ nc -zv sdp.perimeter81.com 5050</code>
     <tr><td>Requirement</td><td>IKEv2-capable router/firewall</td><td>Any Linux server (Ubuntu, CentOS, RHEL, AWS EC2, Azure VM)</td></tr>
     </table>
     <div class="g-sub">Deployment Steps</div>
-    <div class="callout c-danger"><strong>⚠️ Prerequisite — Static Internal LAN IP required.</strong> The connector VM must have a static internal LAN IP before installation. The iptables rules baked into the connector config reference the IP the machine had at install time. If the internal IP ever changes, the connector will break. Set a static IP either in your DHCP server (by MAC reservation) or directly on the Linux VM before running the install script. See: <em>support.perimeter81.com/docs/configuring-a-wireguard-connector</em> → Prerequisites.</div>
+    <div class="callout c-danger"><strong>⚠️ Prerequisite — Static Internal LAN IP required.</strong> The connector VM must have a static internal LAN IP before installation. The iptables rules baked into the connector config reference the IP the machine had at install time. If the internal IP ever changes, the connector will break. Set a static IP either in your DHCP server (by MAC reservation) or directly on the Linux VM before running the install script. See: <em>support.checkpoint.com/results/sk/configuring-a-wireguard-connector</em> → Prerequisites.</div>
     <div class="steps">
       <div class="s-step"><div class="s-num">1</div><div class="s-body">Portal: <strong>Networks &gt; [Network] &gt; Gateway &gt; ... &gt; Add Tunnel &gt; Harmony SASE Connector &gt; Continue</strong></div></div>
       <div class="s-step"><div class="s-num">2</div><div class="s-body">Enter Name, Linux server public IP (or <code>0.0.0.0</code> for dynamic IP), and internal Subnet(s) to route</div></div>
@@ -629,7 +652,7 @@ nc -zv sdp.perimeter81.com 5050</code>
       <div class="s-step"><div class="s-num">6</div><div class="s-body">Reload and restart the service: <code>sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart wg-quick@&lt;interface&gt;</code></div></div>
       <div class="s-step"><div class="s-num">7</div><div class="s-body"><strong>Prevent recurrence:</strong> assign a static IP to the VM — either a DHCP reservation by MAC address on your router, or a static IP configured directly on the Linux network interface.</div></div>
     </div>
-    <div class="callout c-note"><strong>KB reference:</strong> support.perimeter81.com/docs/configuring-a-wireguard-connector → Prerequisites section confirms the static internal IP requirement.</div>`
+    <div class="callout c-note"><strong>KB reference:</strong> support.checkpoint.com/results/sk/configuring-a-wireguard-connector → Prerequisites section confirms the static internal IP requirement.</div>`
   },
   'mdm-deploy':{ey:'Section 2',ti:'MDM Agent Deployment',de:'Deploying the Harmony SASE agent at scale using Mobile Device Management (Intune, Jamf, Mosyle, etc.), including pre-configuration and Internet Access Policy setup for macOS.',html:`
     <div class="callout c-warn"><strong>Important:</strong> If you are managing agent deployment via MDM, <strong>disable the auto-update function</strong> in the Harmony SASE portal to prevent looping installation issues. Portal: Devices &gt; Downloads &gt; disable client auto-update.</div>
@@ -675,7 +698,7 @@ nc -zv sdp.perimeter81.com 5050</code>
     <p class="prose">Three components must be deployed via MDM <strong>before or alongside</strong> the agent installer:</p>
     <div class="steps">
       <div class="s-step"><div class="s-num">1</div><div class="s-body"><strong>Deploy the Internet Access Policy CA Certificate</strong><br>
-        Download the certificate: Portal &gt; Internet Access &gt; HTTPS Inspection &gt; Download Certificate (or see KB: support.perimeter81.com/docs/swg-certificate).<br>
+        Download the certificate: Portal &gt; Internet Access &gt; HTTPS Inspection &gt; Download Certificate (or see KB: support.checkpoint.com/results/sk/swg-certificate).<br>
         Add it to your MDM as a <strong>Certificate payload</strong> targeting the System keychain — deploy it as a trusted CA before the agent installs.</div></div>
       <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Deploy the .mobileconfig profile (easiest method)</strong><br>
         Download the pre-built profile: <a href="https://cdn.document360.io/44667c0c-50d7-412a-acbd-20d4a41c952e/Images/Documentation/Harmony%20SASE.mobileconfig" target="_blank">Harmony SASE.mobileconfig</a><br>
@@ -710,8 +733,62 @@ nc -zv sdp.perimeter81.com 5050</code>
     <tr><td>Microsoft Intune</td><td>Add the .msi as a Line-of-Business app; deploy .mobileconfig via Device Configuration profiles</td></tr>
     <tr><td>Mosyle</td><td>Apps &gt; In-house Apps for the pkg; MDM Profiles for the .mobileconfig</td></tr>
     <tr><td>VMware AirWatch</td><td>Deploy as a public app; push the mobileconfig as a Custom Profile</td></tr>
-    <tr><td>SCCM (Windows)</td><td>See KB: support.perimeter81.com/docs/deploy-with-sccm</td></tr>
+    <tr><td>SCCM (Windows)</td><td>See KB: support.checkpoint.com/results/sk/deploy-with-sccm</td></tr>
     </table>`
+  },
+  'pilot-rollout':{ey:'Section 2',ti:'Pilot &amp; Rollout Guide',de:'A structured pilot validates your configuration, processes, and readiness before a full rollout. Run this before deploying to the full user base.',html:`
+    <div class="callout c-note"><strong>Recommended pilot size: 10–50 users</strong> across a mix of roles, device types, and locations. Typical duration: 2–4 weeks.</div>
+
+    <div class="g-sub">Phase 1 — Define the Pilot</div>
+    <div class="steps">
+      <div class="s-step"><div class="s-num">1</div><div class="s-body"><strong>Select pilot users</strong> — 10–50 users representing a cross-section of roles, device types (Windows, macOS, iOS, Android), and locations (office, remote, BYOD/contractor).</div></div>
+      <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Identify the resources they need</strong> — list all internal servers, apps, and file shares pilot users must reach. This drives your tunnel and ZTNA app configuration.</div></div>
+      <div class="s-step"><div class="s-num">3</div><div class="s-body"><strong>Set a timeline and success criteria upfront</strong> — define what success looks like before starting. Examples: % of pilot users with active sessions by Week 1, support ticket volume below a threshold, user feedback scores.</div></div>
+    </div>
+
+    <div class="g-sub">Phase 2 — Prepare the Environment</div>
+    <div class="steps">
+      <div class="s-step"><div class="s-num">1</div><div class="s-body"><strong>Remove or disable legacy VPN clients</strong> on all pilot devices — running two VPN clients simultaneously causes conflicts and gives inaccurate test results.</div></div>
+      <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Deploy the agent via MDM</strong> (silent install) to managed devices — see the MDM Deployment section. For BYOD or contractor devices, configure agentless ZTNA App Access instead.</div></div>
+      <div class="s-step"><div class="s-num">3</div><div class="s-body"><strong>Verify IdP integration and group sync</strong> — confirm the pilot user group is synced and all users can authenticate before the pilot starts.</div></div>
+    </div>
+
+    <div class="g-sub">Phase 3 — Configure Policies</div>
+    <ul class="blist">
+      <li>Create a <strong>dedicated group</strong> in the SASE portal for pilot users — isolates their policies from production users</li>
+      <li>Define <strong>Private Access rules</strong> — start with least privilege: right resources, right users, nothing more</li>
+      <li>Configure <strong>agentless ZTNA app access rules</strong> if applicable (HTTP/HTTPS, RDP, SSH, VNC)</li>
+      <li>Set up <strong>Device Posture profiles</strong> if your organisation requires compliance checks</li>
+      <li>Audit all rules before go-live: correct resources, correct users, no over-permission</li>
+    </ul>
+
+    <div class="g-sub">Phase 4 — Communicate to Pilot Users</div>
+    <p class="prose">Users who don't know what to expect will generate noise, not signal. Before the pilot starts, notify them of:</p>
+    <ul class="blist">
+      <li>What is changing on their device and why</li>
+      <li>Why they were selected for the pilot</li>
+      <li>What to expect — agent install, sign-in flow, possible performance changes</li>
+      <li>How to report issues — email, Slack channel, or ticketing system</li>
+      <li>The timeline — start date, check-in points, and end date</li>
+    </ul>
+
+    <div class="g-sub">Phase 5 — Run the Pilot</div>
+    <table class="gt"><tr><th>Week</th><th>Focus</th><th>Actions</th></tr>
+    <tr><td><strong>Week 1</strong></td><td>Monitor adoption</td><td>Check Active Sessions, Device Inventory, and firewall events daily. Troubleshoot low adoption: confirm user awareness, check for users still on legacy VPN, resolve auth issues.</td></tr>
+    <tr><td><strong>Week 2+</strong></td><td>Edge cases &amp; feedback</td><td>Watch for unusual networks, unanticipated apps, device conflicts. Check in directly with 5 users: Is it working? Is performance faster or slower? Any access gaps? Are people still using the old VPN?</td></tr>
+    </table>
+
+    <div class="g-sub">Phase 6 — Evaluate and Decide</div>
+    <div class="callout c-success"><strong>Ready for full rollout when:</strong> Majority of users have active sessions, all open issues are resolved, ticket volume is manageable, and user feedback is positive.</div>
+    <div class="callout c-warn"><strong>Run another iteration if:</strong> A significant number of users never connected, policy gaps need substantive changes, or recurring issues remain unresolved.</div>
+
+    <div class="g-sub">Phase 7 — Prepare for Full Rollout</div>
+    <div class="steps">
+      <div class="s-step"><div class="s-num">1</div><div class="s-body"><strong>Document issues and resolutions</strong> — build an issue log from the pilot. This becomes your help desk runbook for the full rollout.</div></div>
+      <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Apply policy and firewall changes</strong> from the pilot learnings before expanding to new user groups.</div></div>
+      <div class="s-step"><div class="s-num">3</div><div class="s-body"><strong>Brief your help desk</strong> with the pilot issue log — they should know the top 5 issues and their resolutions before go-live.</div></div>
+      <div class="s-step"><div class="s-num">4</div><div class="s-body"><strong>Expand department by department</strong> — do not do a big-bang rollout. Each cohort is a mini-pilot. Use the same monitoring checklist from Week 1 for each new group.</div></div>
+    </div>`
   },
   'policies':{ey:'Section 3',ti:'Policy Framework Overview',de:'Five independent policy layers — all per customer tenant. Agent required for everything except ZTNA App Access.',html:`
     <table class="gt"><tr><th>Layer</th><th>Configured Under</th><th>Agent?</th><th>Scope</th></tr>
@@ -752,7 +829,7 @@ nc -zv sdp.perimeter81.com 5050</code>
       <div class="s-step"><div class="s-num">2</div><div class="s-body"><strong>Name:</strong> <code>Host</code> &nbsp;&nbsp; <strong>Value:</strong> the internal FQDN or hostname of the server (same value entered in the app Host field)</div></div>
       <div class="s-step"><div class="s-num">3</div><div class="s-body">Click <strong>Apply</strong> and retest</div></div>
     </div>
-    <div class="callout c-note">KB: <a href="https://support.perimeter81.com/docs/how-to-add-an-http-https-application" target="_blank">support.perimeter81.com/docs/how-to-add-an-http-https-application</a></div>
+    <div class="callout c-note">KB: <a href="https://support.checkpoint.com/results/sk/how-to-add-an-http-https-application" target="_blank">support.checkpoint.com/results/sk/how-to-add-an-http-https-application</a></div>
     <div class="g-sub">URL Aliasing — Publish via Your Own Domain</div>
     <p class="prose">By default, ZTNA apps are accessed via a SASE-assigned FQDN. URL Aliasing replaces this with a custom domain you own — required when the web application enforces trusted-domain authentication, or to resolve CORS issues. Use this when a customer owns a public-facing site that is also reachable via a SASE IPsec or Connector tunnel.</p>
     <div class="steps">
@@ -762,13 +839,13 @@ nc -zv sdp.perimeter81.com 5050</code>
       <div class="s-step"><div class="s-num">4</div><div class="s-body">In the ZTNA app → <strong>URL Alias</strong> → toggle on → enter your CNAME in <strong>External Domain (CNAME)</strong> → select your SSL certificate → Apply.</div></div>
       <div class="s-step"><div class="s-num">5</div><div class="s-body">If the app requires connections from a specific host: also add Custom HTTP Header — <strong>Name = Host</strong>, <strong>Value = your CNAME</strong>.</div></div>
     </div>
-    <div class="callout c-note">KB: <a href="https://support.perimeter81.com/docs/360025534473" target="_blank">support.perimeter81.com/docs/360025534473</a> — Certificate Manager &amp; URL Aliasing</div>
+    <div class="callout c-note">KB: <a href="https://support.checkpoint.com/results/sk/360025534473" target="_blank">support.checkpoint.com/results/sk/360025534473</a> — Certificate Manager &amp; URL Aliasing</div>
     <div class="g-sub">ZTNA Application Known Issues</div>
     <table class="gt"><tr><th>Issue</th><th>Cause</th><th>Fix</th></tr>
     <tr><td>Page loads but components missing (images, styles, scripts)</td><td>Host header missing — web server rejects requests from SASE FQDN domain</td><td>Add Custom HTTP Header: Name = <code>Host</code>, Value = internal FQDN. See steps above.</td></tr>
     <tr><td>CORS errors in browser console</td><td>Web server only accepts requests from a trusted domain; SASE FQDN not trusted</td><td>Configure URL Alias with your own domain + SSL cert, and set Host header to the CNAME.</td></tr>
     <tr><td>SSO does not work within a ZTA app</td><td>ZTA window is isolated — cannot redirect to external IdP (Okta, Azure AD)</td><td>SSO must be implemented at the Harmony SASE portal level, not within the ZTA app itself</td></tr>
-    <tr><td>ZTA RDP freezes intermittently</td><td>Possible gateway resource issue</td><td>Escalate to Check Point Support (Sev 3) with: tenant ID, Network name, affected ZTA application name, and timestamp of occurrences. Support will investigate the gateway-side resource state.</td></tr>
+    <tr><td>ZTA RDP freezes intermittently</td><td>Possible gateway resource issue</td><td>Escalate to Check Point Support with: tenant ID, Network name, affected ZTA application name, and timestamp of occurrences. Support will investigate the gateway-side resource state.</td></tr>
     <tr><td>"Apply" button greyed out when editing ZTA app</td><td>"Add relative URI" field requires a leading "/"</td><td>Edit the relative URI field — a "/" is added automatically. Then save the application.</td></tr>
     </table>`
   },
@@ -921,17 +998,11 @@ dig @&lt;dns-server-ip&gt; hostname.company.com</code>
     </ul>`
   },
   'escalation':{ey:'Section 4',ti:'Escalation Criteria &amp; Severity Definitions',de:'When to open a ticket, how to classify severity, and what to always include.',html:`
-    <div class="callout c-danger"><strong>Escalate Immediately (Sev 1):</strong> Multiple users across offices/regions affected simultaneously; gateway unreachable or not in portal; entire network segment down; traffic may not be encrypted; any suspected security incident.</div>
-    <div class="callout c-warn"><strong>Escalate After Triage (Sev 2/3):</strong> Issue reproducible but unresolved after following this guide; affects 3+ users; a recent change correlates with start of issue.</div>
+    <div class="callout c-danger"><strong>Escalate Immediately:</strong> Multiple users across offices/regions affected simultaneously; gateway unreachable or not in portal; entire network segment down; traffic may not be encrypted; any suspected security incident.</div>
+    <div class="callout c-warn"><strong>Escalate After Triage:</strong> Issue reproducible but unresolved after following this guide; affects 3+ users; a recent change correlates with start of issue.</div>
     <div class="callout c-success"><strong>Self-Resolve First:</strong> Single user cannot connect; SIA blocking unexpected site; DPC failing for one user; hostname not resolving; performance for one user.</div>
-    <div class="g-sub">Check Point Severity Definitions</div>
-    <table class="gt"><tr><th>Severity</th><th>Definition</th><th>Response Time</th></tr>
-    <tr><td><span class="badge b-red">Sev 1 — Critical</span></td><td>Complete loss of service, no workaround</td><td>30 minutes — 24/7</td></tr>
-    <tr><td><span class="badge b-orange">Sev 2 — High</span></td><td>Major impairment, partial workaround exists</td><td>2 hours — business hours</td></tr>
-    <tr><td><span class="badge b-blue">Sev 3 — Medium</span></td><td>Limited impairment, workaround available</td><td>4 hours — business hours</td></tr>
-    <tr><td><span class="badge b-green">Sev 4 — Low</span></td><td>General question / minimal impact</td><td>4 hours — business hours</td></tr>
-    </table>
-    <div class="callout c-note"><strong>Agent Log Collection:</strong> Always include agent logs with any support case. Collect via Agent UI &gt; Support &gt; Collect Logs, or follow the manual collection guide when the UI is unavailable: <a href="https://support.perimeter81.com/docs/manual-log-collection" target="_blank">support.perimeter81.com/docs/manual-log-collection</a></div>
+
+    <div class="callout c-note"><strong>Agent Log Collection:</strong> Always include agent logs with any support case. Collect via Agent UI &gt; Support &gt; Collect Logs, or follow the manual collection guide when the UI is unavailable: <a href="https://support.checkpoint.com/results/sk/manual-log-collection" target="_blank">support.checkpoint.com/results/sk/manual-log-collection</a></div>
     <div class="g-sub">Standard Ticket Information</div>
     <table class="gt"><tr><th>Field</th><th>Where to Find It</th><th>Example</th></tr>
     <tr><td>Tenant ID</td><td>Portal URL subdomain</td><td>company.perimeter81.com</td></tr>
@@ -940,10 +1011,33 @@ dig @&lt;dns-server-ip&gt; hostname.company.com</code>
     <tr><td>Data residency region</td><td>Portal URL</td><td>US / EU / AU / IN / CA</td></tr>
     <tr><td>Exact error message</td><td>Screenshot at time of error</td><td>"Failed to register device certificate"</td></tr>
     <tr><td>Hotspot test result</td><td>Test on mobile hotspot</td><td>Works on hotspot, fails on corp Wi-Fi</td></tr>
-    <tr><td>Agent log bundle</td><td>Agent &gt; Support &gt; Collect Logs, or use the <a href="https://support.perimeter81.com/docs/manual-log-collection" target="_blank">manual collection guide</a> if UI is unavailable</td><td>Attach .zip to ticket</td></tr>
+    <tr><td>Agent log bundle</td><td>Agent &gt; Support &gt; Collect Logs, or use the <a href="https://support.checkpoint.com/results/sk/manual-log-collection" target="_blank">manual collection guide</a> if UI is unavailable</td><td>Attach .zip to ticket</td></tr>
     </table>`
   },
-    'reference':{ey:'Appendix',ti:'Quick Reference',de:'Common errors at a glance, port reference, and KB links.',html:`
+    'faq':{ey:'Appendix',ti:'Frequently Asked Questions',de:'Common questions from admins and MSP partners about Harmony SASE configuration, behaviour, and networking.',html:`
+    <div class="g-sub">Networking & Subnets</div>
+    <table class="gt"><tr><th>Question</th><th>Answer</th></tr>
+    <tr><td><strong>How do I create a Network?</strong></td><td>Networks tab &gt; Create Network. Set name, region, number of gateways, and subnet. The subnet defaults to 10.255.0.0/16 if not specified. <strong>The subnet cannot be changed after creation</strong> — plan carefully.</td></tr>
+    <tr><td><strong>What subnet size should I use?</strong></td><td>Each gateway reserves 1024 IP addresses. Use /22 for 1 gateway, /21 for 2, /20 for 4, /16 for 64, /12 for up to 1024. Use a larger range if you plan to add gateways later — you cannot resize without deleting the network.</td></tr>
+    <tr><td><strong>How do I add a region to an existing network?</strong></td><td>Networks &gt; three-dot menu (...) next to the network &gt; Add Region &gt; choose region and number of gateways (limited by available licenses).</td></tr>
+    <tr><td><strong>What private IP ranges are supported?</strong></td><td>10.0-255.0.0/8 (min /22, max /12), 172.16-31.0.0/12 (min /22, max /12), 192.168.0.0/16 (min /22, max /16). Avoid 192.168.1.0/24, 192.168.0.0/24, and 10.0.0.0/24 — used by most consumer ISPs.</td></tr>
+    </table>
+    <div class="g-sub">Connectivity & Behaviour</div>
+    <table class="gt"><tr><th>Question</th><th>Answer</th></tr>
+    <tr><td><strong>Why do users disconnect when I change a tunnel or gateway?</strong></td><td>Any change to a gateway (add/remove/update tunnels) requires the gateway to restart its service briefly. Active connections are severed until the restart completes. Perform maintenance outside business hours to minimise disruption.</td></tr>
+    <tr><td><strong>How can I ensure users stay connected to the VPN?</strong></td><td>Several enforcement options in Devices &gt; User Configuration: <strong>Always-On</strong> (disables disconnect button, requires sign-out code), <strong>Automatic Wi-Fi Security</strong> (auto-connects on unsecured networks), <strong>Kill Switch</strong> (disables internet if VPN drops). Note: Kill Switch can frustrate non-technical users — enable only if specifically required.</td></tr>
+    <tr><td><strong>Why is SMB / Windows file sharing slow over VPN?</strong></td><td>SMB has known latency over VPN. Mitigations: (1) switch from a WireGuard Connector to an IPsec tunnel directly on the router — IPsec performs better for SMB; (2) upgrade SMB to v2 or v3 on the file server; (3) check and match MTU sizes across all interfaces. See Microsoft guidance on SMB fine-tuning.</td></tr>
+    <tr><td><strong>What is the difference between agentless ZTNA and agent-based access?</strong></td><td>Agentless ZTNA: browser-only, one published app per session, no internet security protection. Agent: full network access to all permitted resources, internet traffic inspected by Internet Access Policy, DPC enforcement. Use agentless for BYOD/contractors needing one web app; use the agent for managed devices needing full access.</td></tr>
+    </table>
+    <div class="g-sub">Administration</div>
+    <table class="gt"><tr><th>Question</th><th>Answer</th></tr>
+    <tr><td><strong>How do I get started with a new workspace?</strong></td><td>1) Create Network (with region and gateways) 2) Configure IdP and invite users 3) Set up tunnels for internal resources 4) Configure ZTNA app access rules and firewall policies 5) Deploy agents via MDM 6) Configure Internet Access Policy and bypass rules 7) Monitor via Active Sessions and Device Inventory.</td></tr>
+    <tr><td><strong>How do I regain admin access if the IdP is broken?</strong></td><td>Go to yourworkspace.perimeter81.com &gt; enter your email &gt; click "Sign in using email and password" to bypass the IdP redirect and use your SASE database credentials. See the Agent Issues guide section for full steps.</td></tr>
+    <tr><td><strong>Where do I find the agent version?</strong></td><td>Top-right corner of the agent window (e.g. "Or Rabinovich — 12.6.0.8419"), or Portal: Devices &gt; Device Inventory &gt; Agent Version column.</td></tr>
+    <tr><td><strong>Can I deploy to Windows Server or VMs?</strong></td><td>No — the Harmony SASE agent is not supported on Windows Server or virtual machine environments.</td></tr>
+    </table>`
+  },
+  'reference':{ey:'Appendix',ti:'Quick Reference',de:'Common errors at a glance, port reference, and KB links.',html:`
     <div class="g-sub">Common Errors — First Steps</div>
     <table class="gt"><tr><th>Error / Symptom</th><th>Likely Cause</th><th>First Action</th></tr>
     <tr><td>Failed to register device certificate</td><td>Clock out of sync</td><td>Sync device clock immediately</td></tr>
@@ -957,17 +1051,17 @@ dig @&lt;dns-server-ip&gt; hostname.company.com</code>
     </table>
     <div class="g-sub">Key KB Resources</div>
     <table class="gt"><tr><th>Topic</th><th>URL</th></tr>
-    <tr><td>Quick Start Guide</td><td>support.perimeter81.com/docs</td></tr>
-    <tr><td>Agent Downloads</td><td>support.perimeter81.com/docs/downloading-the-agent</td></tr>
-    <tr><td>Device Posture Check</td><td>support.perimeter81.com/docs/device-posture-check</td></tr>
-    <tr><td>Internet Access Policy</td><td>support.perimeter81.com/docs/secure-web-gateway</td></tr>
-    <tr><td>Certificate Pinning Bypass</td><td>support.perimeter81.com/docs/certificate-pinning</td></tr>
-    <tr><td>WireGuard Connector</td><td>support.perimeter81.com/docs/configuring-a-wireguard-connector</td></tr>
-    <tr><td>HAR File Collection</td><td>support.perimeter81.com/docs/generating-a-har-file-for-troubleshooting</td></tr>
-    <tr><td>IPsec Troubleshooting</td><td>support.perimeter81.com/docs/troubleshooting</td></tr>
-    <tr><td>Reclaim Access after IdP Lock</td><td>support.perimeter81.com/docs/360010132719</td></tr>
-    <tr><td>Change PC/Mac DNS Settings</td><td>support.perimeter81.com/docs/change-your-pc-dns-settings</td></tr>
-    <tr><td>Infinity Portal Onboarding</td><td>support.perimeter81.com/docs/onboarding-the-infinity-portal</td></tr>
+    <tr><td>Quick Start Guide / CP Support KB</td><td>support.checkpoint.com</td></tr>
+    <tr><td>Agent Downloads</td><td>support.checkpoint.com/results/sk/downloading-the-agent</td></tr>
+    <tr><td>Device Posture Check</td><td>support.checkpoint.com/results/sk/device-posture-check</td></tr>
+    <tr><td>Internet Access Policy</td><td>support.checkpoint.com/results/sk/secure-web-gateway</td></tr>
+    <tr><td>Certificate Pinning Bypass</td><td>support.checkpoint.com/results/sk/certificate-pinning</td></tr>
+    <tr><td>WireGuard Connector</td><td>support.checkpoint.com/results/sk/configuring-a-wireguard-connector</td></tr>
+    <tr><td>HAR File Collection</td><td>support.checkpoint.com/results/sk/generating-a-har-file-for-troubleshooting</td></tr>
+    <tr><td>IPsec Troubleshooting</td><td>support.checkpoint.com/results/sk/troubleshooting</td></tr>
+    <tr><td>Reclaim Access after IdP Lock</td><td>support.checkpoint.com/results/sk/360010132719</td></tr>
+    <tr><td>Change PC/Mac DNS Settings</td><td>support.checkpoint.com/results/sk/change-your-pc-dns-settings</td></tr>
+    <tr><td>Infinity Portal Onboarding</td><td>support.checkpoint.com/results/sk/onboarding-the-infinity-portal</td></tr>
     <tr><td>Platform Status</td><td><a href="https://status.checkpoint.com" target="_blank">status.checkpoint.com</a> → Check Point SASE Services &amp; Regions (status.perimeter81.com is deprecated)</td></tr>
     <tr><td>Admin Guide</td><td>docs.checkpoint.com/harmony-sase</td></tr>
     <tr><td>Support Portal</td><td>supportcenter.checkpoint.com</td></tr>
@@ -979,69 +1073,64 @@ dig @&lt;dns-server-ip&gt; hostname.company.com</code>
 // TROUBLESHOOTER FLOWS
 // ═══════════════════════════════════════════════════════
 const SYMPTOMS=[
-  {id:'agent-connect',icon:'🔌',title:'Agent won\'t connect',desc:'Stuck connecting, spinning, or repeated disconnections',
-   flow:[{q:'Is the system clock synchronised on the affected device?',body:'An out-of-sync system clock causes certificate registration failures and authentication errors. Windows: Settings &gt; Date &amp; Time &gt; Sync Now. macOS: System Settings &gt; General &gt; Date &amp; Time.',
-    yes:{q:'Does the issue occur on a mobile hotspot too?',body:'Switching to a mobile hotspot bypasses the corporate firewall. This is the key scoping question.',
-     yes:{result:'Device-specific issue — work through these steps in order before escalating.',detail:'<strong>Step 1 — Switch protocol</strong><br>Agent Settings &gt; Protocols &gt; switch from WireGuard to OpenVPN (or vice versa). If "Default" is set by the admin, ask the admin to change the default protocol in the portal under Devices &gt; User Configuration.<br><br><strong>Step 2 — Verify connectivity to required endpoints</strong><br>Confirm the device can reach the following (see the <a href=\"https://support.perimeter81.com/docs/can-t-connect-perimeter-s-internet-connection-troubleshooting-guide\" target=\"_blank\">full KB article</a> for the complete list):<br>• <code>api.perimeter81.com</code> (or your region equivalent)<br>• <code>sdpv2-agent-ws.perimeter81.com</code> (agents v11.7+)<br>• <code>sdp.perimeter81.com</code> (agents pre-v11.7, port 5050)<br>• <code>auth.perimeter81.com</code><br>• <code>*.auth0.com</code><br><br>Windows: <code>tnc api.perimeter81.com -port 443</code><br>macOS: <code>nc -zv api.perimeter81.com 443</code><br><br><strong>Step 3 — Restart agent</strong><br>Quit the application completely (not just close the window), wait 10 seconds, relaunch.<br><br><strong>Step 4 — Restart the device</strong><br>Clears stale network state — especially after sleep/wake cycles or network switches.<br><br><strong>Step 5 — Reinstall from a freshly downloaded installer</strong><br>Download the latest agent from the portal or from <a href=\"https://support.perimeter81.com/docs/downloading-the-agent\" target=\"_blank\">support.perimeter81.com/docs/downloading-the-agent</a>. Corrupted installations are more common than they appear.',escalate:'If all steps above are exhausted and the issue persists: open Sev 3 case. Include: agent version, OS version, exact error message, whether it works on hotspot, and agent logs. Collect logs manually: <a href=\"https://support.perimeter81.com/docs/manual-log-collection\" target=\"_blank\">support.perimeter81.com/docs/manual-log-collection</a>'},
-     no:{result:'Corporate network is blocking VPN ports.',detail:'Run connectivity tests:<br><br>Windows: <code>tnc sdpv2-agent-ws.perimeter81.com -port 443</code><br>macOS: <code>nc -zv sdpv2-agent-ws.perimeter81.com 443</code><br><br>For pre-v11.7 agents, also test: <code>tnc sdp.perimeter81.com -port 5050</code><br><br>Share results with your network team to unblock the required destinations.',escalate:'If ports are confirmed open and the issue persists, open Sev 3 case with agent logs and connectivity test output. To collect agent logs manually: support.perimeter81.com/docs/manual-log-collection'}},
-    no:{result:'Sync the clock first — this resolves the majority of agent failures.',detail:'Windows: Settings &gt; Date &amp; Time &gt; Sync Now<br>macOS: System Settings &gt; General &gt; Date &amp; Time<br><br>After syncing, restart the agent completely.',escalate:'If syncing the clock does not resolve it, continue to check port connectivity.'}}]},
+  {id:'agent-connect',icon:'🔌',title:'Agent won\'t connect',desc:'Stuck connecting, spinning, or repeated disconnections',flow:[{q:'Which operating system is the affected device?',body:'',options:[{label:'Windows',next:{q:'Does the agent show &quot;Windows service failed to start in time&quot;?',body:'This specific error (pop-up on launch) indicates a .NET version conflict on the machine.',yes:{result:'Remove all .NET instances and reinstall the agent.',detail:'The agent ships with its own .NET version. Competing versions cause the service to fail.<br><br>1) Uninstall Harmony SASE from Add/Remove Programs<br>2) Uninstall ALL existing .NET / .NET Framework / SDK versions<br>3) Reboot<br>4) Reinstall from a freshly downloaded installer',escalate:'Open a support case with the Windows Event Log and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'},no:{q:'Does the issue occur on a mobile hotspot too?',body:'Hotspot bypasses the corporate firewall — this scopes whether the issue is the device or the network.',yes:{result:'Device-specific issue — work through these steps in order.',detail:'<strong>1) Sync the system clock</strong> — Settings &gt; Date &amp; Time &gt; Sync Now<br><br><strong>2) Switch protocol</strong> — Agent Settings &gt; Protocols &gt; try WireGuard → OpenVPN<br><br><strong>3) Verify endpoint connectivity</strong><br><code>tnc api.perimeter81.com -port 443</code><br><code>tnc sdpv2-agent-ws.perimeter81.com -port 443</code><br>Pre-v11.7: also <code>tnc sdp.perimeter81.com -port 5050</code><br><br><strong>4) Restart the agent</strong> — quit completely, wait 10s, relaunch<br><br><strong>5) Restart the device</strong><br><br><strong>6) Reinstall from a freshly downloaded installer</strong>',escalate:'Open a support case with agent version, OS, exact error, hotspot result, and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'},no:{result:'Corporate network is blocking required ports.',detail:'Run from the corporate network:<br><code>tnc sdpv2-agent-ws.perimeter81.com -port 443</code><br><code>tnc api.perimeter81.com -port 443</code><br>Pre-v11.7: also <code>tnc sdp.perimeter81.com -port 5050</code><br><br>Share results with the customer network team — the failing destination needs to be allowlisted.',escalate:'Open a support case with connectivity test output and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'}}}},{label:'macOS',next:{q:'Is the Harmony SASE Network Extension enabled and approved?',body:'macOS requires explicit approval before the agent can intercept any traffic.<br><br>Check: System Settings &gt; General &gt; Login Items &amp; Extensions &gt; Network Extensions — Harmony SASE must be toggled ON.<br><br>Verify from Terminal: <code>systemextensionsctl list</code> — look for <code>[activated enabled]</code>.<br><br>If missing entirely: <code>spctl kext-consent status</code> must return ENABLED — raise with MDM admin if disabled.',yes:{q:'Is DPC (Device Posture Check) configured for this tenant?',body:'If DPC is set to read files from the filesystem (osquery), a missing macOS TCC permission causes DPC to fail silently and can block login or session establishment for the whole tenant.',yes:{result:'Check all three required extensions and TCC permissions.',detail:'Required extensions:<br>• <strong>DNS Proxy System Extension</strong><br>• <strong>App Proxy Provider System Extension</strong><br>• <strong>System Extension Install</strong><br><br>Verify: <code>systemextensionsctl list</code> — all should show <code>[activated enabled]</code><br><br><strong>If DPC reads the filesystem (osquery):</strong> check System Settings &gt; Privacy &amp; Security — the agent may need Full Disk Access or Files &amp; Folders permission.',escalate:'Open a support case with systemextensionsctl output, DPC rule config, and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'},no:{result:'Verify all three required extensions are active.',detail:'Required extensions:<br>• <strong>DNS Proxy System Extension</strong><br>• <strong>App Proxy Provider System Extension</strong><br>• <strong>System Extension Install</strong><br><br>Check: <code>systemextensionsctl list</code> — all should show <code>[activated enabled]</code><br><br>If Internet Access Policy is enabled: confirm CA cert trusted in Keychain and Content Filter active under Network settings.',escalate:'Open a support case with systemextensionsctl output and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'}},no:{result:'Enable the Network Extension first — the agent cannot function without it.',detail:'1) System Settings &gt; General &gt; Login Items &amp; Extensions &gt; Network Extensions — toggle Harmony SASE ON<br>2) If showing \'waiting for user\': approve the toggle<br>3) If missing: <code>spctl kext-consent status</code> must return ENABLED — raise with MDM admin if disabled.',escalate:''}}},{label:'Linux',next:{result:'Linux troubleshooting steps.',detail:'<strong>1) Update kernel and packages:</strong><br><code>sudo apt update &amp;&amp; sudo apt upgrade</code> — outdated kernels cause WireGuard module failures<br><br><strong>2) Reinstall the agent:</strong><br><code>sudo apt install perimeter81_*_amd64.deb</code><br>Uninstall: <code>sudo apt remove perimeter81</code><br><br><strong>3) Connectivity steps:</strong><br>• Default protocol on Linux is OpenVPN — switch if stuck<br>• Force quit: <code>sudo killall perimeter81</code><br>• Restart networking: <code>sudo service network-manager restart</code><br>• Restart DNS: <code>sudo service resolvconf restart; sudo resolvconf -u</code><br><br><strong>4) Check daemon helper:</strong><br><code>sudo service perimeter81helper status</code><br>Logs: <code>tail -f /var/log/perimeter81helper.log</code><br><br><strong>5) Wipe agent state (last resort):</strong> remove <code>~/.config/Perimeter81</code><br><br><strong>6) resolv.conf permissions:</strong> <code>chmod 644 /etc/resolv.conf</code>',escalate:'Open a support case if still failing. Collect logs from Settings &gt; Support tab or <code>~/.config/Perimeter81/logs</code>.'}},{label:'iOS',next:{result:'iOS troubleshooting steps.',detail:'<strong>1) Switch protocol</strong> — Agent Settings &gt; Protocols &gt; try WireGuard → OpenVPN<br><br><strong>2) Try a different network</strong> — test mobile data vs. Wi-Fi<br><br><strong>3) Restart the app</strong> — force-close completely and reopen<br><br><strong>4) Reinstall</strong> from the App Store<br><br><strong>5) If stuck on loading screen</strong> — open sign-in URL in Chrome (not Safari):<br>US: <code>https://app.perimeter81.com/sign-in?redirectUrl=perimeter81://perimeter81.com/macos/callback</code><br>EU: <code>https://app.eu.sase.checkpoint.com/sign-in?redirectUrl=perimeter81://eu.sase.checkpoint.com/callback</code>',escalate:'Open a support case if still failing. Full KB: support.checkpoint.com/results/sk/can-t-connect-perimeter-s-internet-connection-troubleshooting-guide'}},{label:'Android',next:{result:'Android troubleshooting steps.',detail:'<strong>1) Switch protocol</strong> — Agent Settings &gt; Protocols &gt; try WireGuard → OpenVPN<br><br><strong>2) Try a different network</strong> — test mobile data vs. Wi-Fi<br><br><strong>3) Restart the app</strong> — force-close and reopen<br><br><strong>4) Reinstall</strong> from Google Play<br><br><strong>5) Check for OS updates</strong> — ensure the device is on a supported Android version',escalate:'Open a support case if still failing. Full KB: support.checkpoint.com/results/sk/can-t-connect-perimeter-s-internet-connection-troubleshooting-guide'}}]}]},
   {id:'login-fail',icon:'🔐',title:'Login / auth error',desc:'Error on sign-in, wrong group, blocked account',
    flow:[{q:'Is the user being redirected to their IdP (Okta, Azure AD, etc.) instead of seeing a password field?',body:'When a user types their email on the sign-in screen, SASE checks if the email domain matches any <strong>Domain Alias</strong> configured under Settings &gt; Identity Providers. If it matches, the password field disappears and authentication goes through the IdP — not the SASE database credentials.<br><br>If the user needs to sign in with their SASE database credentials instead (e.g. for admin access or testing), they must click <strong>"Sign in using email and password"</strong> at the bottom of the sign-in screen to bypass IdP redirect.',
     yes:{label:'Yes — they want IdP login but it is failing',q:'Does the login fail with a "not in group" or access denied message?',body:'NOT_IN_ACCESS_GROUP does not appear in the agent UI — it only shows up inside a HAR file. You need to capture one to confirm the exact error.',
      yes:{result:'NOT_IN_ACCESS_GROUP — check Device Inventory first, then capture a HAR to confirm.',detail:'<strong>Step 1 — Check Device Inventory (workspace admins)</strong><br>Portal: Devices &gt; Device Inventory — find the affected user device and check the <strong>User Status</strong> column. NOT_IN_ACCESS_GROUP will show here without needing a HAR file.<br><br><strong>Step 2 — Capture a HAR file (if Device Inventory is inconclusive)</strong><br>The error also appears inside a HAR file from the browser login attempt:<br>1) Open Chrome on the affected device<br>2) Press F12 → go to the <strong>Network</strong> tab → ensure recording is on (red dot)<br>3) Reproduce the login attempt from start to finish<br>4) Right-click any request → <strong>Save all as HAR with content</strong><br>5) Open the HAR file in a text editor and search for <code>NOT_IN_ACCESS_GROUP</code><br><br><strong>Fix:</strong><br>1) Portal: Team &gt; Groups — verify the group name exactly matches what the IdP sends (case-sensitive, character-by-character)<br>2) Do not select "All Users" group — use the specific named group<br>3) Admin: Team &gt; Members &gt; [user] &gt; Sign Out All Devices, then have the user retry'},
-     no:{result:'IdP login is failing for another reason.',detail:'1) Verify IdP is reachable and SAML/OIDC config has not changed recently (Settings &gt; Identity Providers)<br>2) Test a direct login via the IdP portal to rule out an IdP-side issue<br>3) Check if the account is blocked: Team &gt; Members &gt; ... &gt; Unblock (triggered by 10 consecutive failed logins)',escalate:'If IdP is confirmed working and the issue persists, open Sev 3 case with: exact error message, authentication method (SAML/OIDC), and agent logs. Collect logs: support.perimeter81.com/docs/manual-log-collection'}},
+     no:{result:'IdP login is failing for another reason.',detail:'1) Verify IdP is reachable and SAML/OIDC config has not changed recently (Settings &gt; Identity Providers)<br>2) Test a direct login via the IdP portal to rule out an IdP-side issue<br>3) Check if the account is blocked: Team &gt; Members &gt; ... &gt; Unblock (triggered by 10 consecutive failed logins)',escalate:'If IdP is confirmed working and the issue persists, open a support case with: exact error message, authentication method (SAML/OIDC), and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'}},
     no:{label:'No — they want to use SASE database credentials',result:'Domain alias is redirecting them to IdP. To use SASE database credentials instead, click "Sign in using email and password" at the bottom of the sign-in screen.',detail:'When a user types an email whose domain matches a configured Domain Alias, SASE automatically redirects to the IdP and hides the password field. This is expected behaviour.<br><br>To sign in with SASE database credentials:<br>1) On the sign-in screen, click <strong>"Sign in using email and password"</strong> (link at the bottom)<br>2) Enter email and SASE password directly<br><br>If the user cannot see this option, ensure they are on the correct workspace URL. If they need their SASE password reset, an admin can do this under Team &gt; Members.',escalate:''}}]},
   {id:'no-resource',icon:'🔒',title:'Can\'t reach internal resource',desc:'VPN connected but a server, app, or file share is unreachable',
    flow:[{q:'Is the user connected to the correct SASE Network?',body:'Check agent UI for the Network name. Portal: Monitor &gt; Active Sessions — confirm gateway/network assignment.',
     yes:{q:'Are the site-to-site tunnels on this Network healthy?',body:'The resource is behind a site-to-site tunnel — if the tunnel is down, nothing behind it is reachable regardless of routing or firewall rules.<br><br>Check tunnel state: <strong>Networks &gt; [Network] &gt; Gateways &gt; [Gateway] &gt; Tunnels</strong> — all tunnels serving this resource should show as <strong>Active</strong>.<br><br>For Perimeter 81 Connectors: on the Linux server running the connector, run <code>sudo wg show</code> — confirm latest handshake is recent and bytes are transferring.',
      yes:{q:'Can the resource be reached by its IP address (not hostname)?',body:'Test: <code>ping &lt;IP&gt;</code> or <code>nc -zv &lt;IP&gt; &lt;port&gt;</code> if ICMP is blocked.',
       yes:{q:'Does the page load but with missing components (broken images, missing styles, scripts)?',body:'Some elements load but others fail — this is different from the resource being completely unreachable.',
-      yes:{result:'Host header issue — web server rejecting requests from the SASE FQDN.',detail:'ZTNA apps use a SASE-assigned FQDN (*.pzero.perimeter81.com). Web servers that check the Host header may reject component requests.<br><br><strong>Fix — add a Custom Host Header:</strong><br>1) Open the ZTNA app settings<br>2) Scroll to Custom HTTP Headers<br>3) Name = <code>Host</code>, Value = the internal FQDN/hostname of the server<br>4) Apply and retest<br><br><strong>If CORS errors appear or the app needs requests from your own domain:</strong> configure a URL Alias — create a CNAME on your domain pointing to the SASE FQDN, upload your SSL cert in Settings &gt; Certificate Manager, then enable URL Alias in the app settings.<br><br>KB: <a href="https://support.perimeter81.com/docs/how-to-add-an-http-https-application" target="_blank">how-to-add-an-http-https-application</a> | <a href="https://support.perimeter81.com/docs/360025534473" target="_blank">URL Aliasing KB</a>'},
-      no:{result:'DNS issue — hostname not resolving.',detail:'1) Confirm Private DNS enabled: Networks &gt; [Network] &gt; Private DNS<br>2) Verify "Use VPN Interface DNS" is on in agent settings<br>3) Test: <code>nslookup hostname.company.com &lt;dns-server-ip&gt;</code>',escalate:'Open Sev 3 case with nslookup output connected and disconnected.'}},
-      no:{result:'Routing or firewall issue — tunnel is up but traffic not reaching resource.',detail:'1) Check Routes Table: Networks &gt; [Network] &gt; options &gt; Routes Table — confirm resource subnet is listed<br>2) Check for subnet overlap with SASE network subnet<br>3) Verify the remote router has a static route pointing the SASE subnet back through the tunnel interface<br>4) Verify resource-side firewall allows inbound from the SASE subnet',escalate:'Open Sev 3 case with: Network name, resource IP, SASE subnet, routes table screenshot, tunnel state screenshot.'}},
-     no:{label:'Tunnel is down or unhealthy',result:'Fix the tunnel first — the resource is unreachable because its site-to-site connection is down.',detail:'<strong>IPsec tunnel down?</strong> Go to the IPsec Tunnel Troubleshooting flow for step-by-step diagnosis.<br><br><strong>Perimeter 81 Connector down?</strong> Go to the Connector Offline flow.<br><br>Common quick checks:<br>1) Portal: Networks &gt; [Network] &gt; Gateways — confirm the gateway itself is online<br>2) IPsec: verify remote peer IP has not changed (Networks &gt; Sites &gt; [Site] &gt; Edit)<br>3) Connector: <code>sudo systemctl status wg-quick@&lt;interface&gt;</code> on the Linux server<br>4) Check Operational Events for tunnel errors: Portal &gt; Monitor &amp; Logs &gt; Operational Events',escalate:'If the tunnel cannot be restored after basic checks, open Sev 2 case — users cannot reach internal resources until the tunnel is restored.'}},
+      yes:{result:'Host header issue — web server rejecting requests from the SASE FQDN.',detail:'ZTNA apps use a SASE-assigned FQDN (*.pzero.perimeter81.com). Web servers that check the Host header may reject component requests.<br><br><strong>Fix — add a Custom Host Header:</strong><br>1) Open the ZTNA app settings<br>2) Scroll to Custom HTTP Headers<br>3) Name = <code>Host</code>, Value = the internal FQDN/hostname of the server<br>4) Apply and retest<br><br><strong>If CORS errors appear or the app needs requests from your own domain:</strong> configure a URL Alias — create a CNAME on your domain pointing to the SASE FQDN, upload your SSL cert in Settings &gt; Certificate Manager, then enable URL Alias in the app settings.<br><br>KB: <a href="https://support.checkpoint.com/results/sk/how-to-add-an-http-https-application" target="_blank">how-to-add-an-http-https-application</a> | <a href="https://support.checkpoint.com/results/sk/360025534473" target="_blank">URL Aliasing KB</a>'},
+      no:{result:'DNS issue — hostname not resolving.',detail:'1) Confirm Private DNS enabled: Networks &gt; [Network] &gt; Private DNS<br>2) Verify "Use VPN Interface DNS" is on in agent settings<br>3) Test: <code>nslookup hostname.company.com &lt;dns-server-ip&gt;</code>',escalate:'Open a support case with nslookup output connected and disconnected.'}},
+      no:{result:'Routing or firewall issue — tunnel is up but traffic not reaching resource.',detail:'1) Check Routes Table: Networks &gt; [Network] &gt; options &gt; Routes Table — confirm resource subnet is listed<br>2) Check for subnet overlap with SASE network subnet<br>3) Verify the remote router has a static route pointing the SASE subnet back through the tunnel interface<br>4) Verify resource-side firewall allows inbound from the SASE subnet',escalate:'Open a support case with: Network name, resource IP, SASE subnet, routes table screenshot, tunnel state screenshot.'}},
+     no:{label:'Tunnel is down or unhealthy',result:'Fix the tunnel first — the resource is unreachable because its site-to-site connection is down.',detail:'<strong>IPsec tunnel down?</strong> Go to the IPsec Tunnel Troubleshooting flow for step-by-step diagnosis.<br><br><strong>Perimeter 81 Connector down?</strong> Go to the Connector Offline flow.<br><br>Common quick checks:<br>1) Portal: Networks &gt; [Network] &gt; Gateways — confirm the gateway itself is online<br>2) IPsec: verify remote peer IP has not changed (Networks &gt; Sites &gt; [Site] &gt; Edit)<br>3) Connector: <code>sudo systemctl status wg-quick@&lt;interface&gt;</code> on the Linux server<br>4) Check Operational Events for tunnel errors: Portal &gt; Monitor &amp; Logs &gt; Operational Events',escalate:'If the tunnel cannot be restored after basic checks, open a support case — users cannot reach internal resources until the tunnel is restored.'}},
     no:{result:'User is connected to the wrong Network.',detail:'Disconnect and reconnect, selecting the correct Network from the agent UI.',escalate:''}}]},
   {id:'tunnel-down',icon:'🔗',title:'IPsec tunnel is down',desc:'Site-to-site tunnel showing as down or unstable',
    flow:[{q:'Did the remote device\'s public IP change recently?',body:'A changed public IP is one of the most common causes of sudden tunnel failure after a period of working correctly.',
     yes:{result:'Update the remote peer IP in the SASE portal.',detail:'Portal: Networks &gt; Sites &gt; [Site Name] &gt; options &gt; Edit<br>Update the Remote Gateway IP to the new public IP and save.',escalate:'If still not coming up after IP update, check Phase 1 parameters and PSK on both sides.'},
     no:{q:'Does the remote device show the tunnel as up?',body:'Check the remote firewall/router management interface for tunnel state.',
      yes:{result:'PSK or parameter mismatch.',detail:'1) Re-enter PSK on both sides (check for trailing whitespace)<br>2) Verify all Phase 1/2 parameters match exactly<br>3) Check Operational Events: Portal &gt; Monitor &amp; Logs &gt; Operational Events'},
-     no:{result:'IKE negotiation is failing — parameter mismatch or ports blocked.',detail:'1) Verify IKEv2, AES-256, SHA-256, DH Group 14, lifetimes match on both peers<br>2) Confirm UDP 500 and UDP 4500 open bidirectionally<br>3) SonicWall Gen7 / SonicOS 7+: use IKEv1 instead',escalate:'Open Sev 2/3 case with: remote device make/model/firmware, Phase 1/2 config from both sides, Operational Events screenshot.'}}}]},
+     no:{result:'IKE negotiation is failing — parameter mismatch or ports blocked.',detail:'1) Verify IKEv2, AES-256, SHA-256, DH Group 14, lifetimes match on both peers<br>2) Confirm UDP 500 and UDP 4500 open bidirectionally<br>3) SonicWall Gen7 / SonicOS 7+: use IKEv1 instead',escalate:'Open a support case with: remote device make/model/firmware, Phase 1/2 config from both sides, Operational Events screenshot.'}}}]},
   {id:'connector-down',icon:'⚡',title:'Connector offline',desc:'Perimeter 81 Connector (WireGuard) not connecting',
    flow:[{q:'Did the connector work before and suddenly stop?',body:'A sudden outage with no external changes often means the connector VM\'s internal LAN IP has changed. The iptables rules baked in at install time reference the original IP.',
     yes:{q:'Is the WireGuard service running on the Linux server?',body:'Run: <code>sudo systemctl status wg-quick@&lt;interface&gt;</code>',
      yes:{q:'What does <code>sudo wg show</code> indicate?',body:'Check: latest handshake timestamp (should be &lt; 2 minutes), and transfer bytes (should be &gt; 0 both sides).',
       yes:{label:'Handshake recent, bytes > 0',result:'Connector is working — routing issue.',detail:'1) Verify subnets in portal Routes Table: Networks &gt; [Network] &gt; options &gt; Routes Table<br>2) Check IP forwarding: <code>cat /proc/sys/net/ipv4/ip_forward</code> — should be 1<br>3) Check local firewall on connector server'},
       no:{label:'Handshake old or bytes = 0',q:'Has the connector VM\'s internal LAN IP changed?',body:'Run <code>ifconfig</code> and compare the current LAN IP to what is in the override config: <code>cat /etc/systemd/system/wg-quick*/override.conf</code>. If the IPs differ, the internal IP has changed.',
-       yes:{result:'Internal LAN IP changed — update the override config.',detail:'The connector\'s iptables rules were written with the original IP at install time. Fix:<br><br>1) <code>ifconfig</code> — note the current LAN IP<br>2) <code>vim /etc/systemd/system/wg-quick*/override.conf</code><br>3) Replace the old IP with the current one (<code>i</code> to edit, <code>Esc</code> to stop)<br>4) Save: type <code>:wq!</code> and press Enter<br>5) <code>sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart wg-quick@&lt;interface&gt;</code><br><br><strong>Prevent recurrence:</strong> assign a static internal IP — either a DHCP reservation by MAC address, or configure it statically on the Linux network interface.',escalate:'If the override file looks correct and the connector still will not connect, open Sev 3 case with output of sudo wg show, ifconfig, and the override.conf content.'},
-       no:{result:'Connector not maintaining active connection — other cause.',detail:'1) Verify outbound UDP 8000 is open from the connector server<br>2) If server public IP changed: reconfigure in portal and re-run install script<br>3) AWS EC2: disable source/destination checks on instance NIC',escalate:'Open Sev 3 case with: output of sudo wg show, systemd status, server OS, whether public IP recently changed.'}}},
+       yes:{result:'Internal LAN IP changed — update the override config.',detail:'The connector\'s iptables rules were written with the original IP at install time. Fix:<br><br>1) <code>ifconfig</code> — note the current LAN IP<br>2) <code>vim /etc/systemd/system/wg-quick*/override.conf</code><br>3) Replace the old IP with the current one (<code>i</code> to edit, <code>Esc</code> to stop)<br>4) Save: type <code>:wq!</code> and press Enter<br>5) <code>sudo systemctl daemon-reload &amp;&amp; sudo systemctl restart wg-quick@&lt;interface&gt;</code><br><br><strong>Prevent recurrence:</strong> assign a static internal IP — either a DHCP reservation by MAC address, or configure it statically on the Linux network interface.',escalate:'If the override file looks correct and the connector still will not connect, open a support case with output of sudo wg show, ifconfig, and the override.conf content.'},
+       no:{result:'Connector not maintaining active connection — other cause.',detail:'1) Verify outbound UDP 8000 is open from the connector server<br>2) If server public IP changed: reconfigure in portal and re-run install script<br>3) AWS EC2: disable source/destination checks on instance NIC',escalate:'Open a support case with: output of sudo wg show, systemd status, server OS, whether public IP recently changed.'}}},
      no:{result:'WireGuard service not running.',detail:'Start: <code>sudo systemctl start wg-quick@&lt;interface&gt;</code><br>Enable on boot: <code>sudo systemctl enable wg-quick@&lt;interface&gt;</code><br><br>If fails to start: <code>journalctl -u wg-quick@&lt;interface&gt; -n 50</code>',escalate:'If service cannot start, re-run the installation script from portal: Networks &gt; [Network] &gt; [Tunnel] &gt; Configuration.'}},
     no:{q:'Is the WireGuard service running on the Linux server?',body:'Run: <code>sudo systemctl status wg-quick@&lt;interface&gt;</code>',
-     yes:{result:'Service is running — check outbound connectivity and portal config.',detail:'1) Verify outbound UDP 8000 is open from the connector server<br>2) If server public IP changed: reconfigure in portal and re-run install script (Networks &gt; [Network] &gt; [Tunnel] &gt; Configuration)<br>3) AWS EC2: disable source/destination checks on instance NIC',escalate:'Open Sev 3 case with: output of sudo wg show, systemd service status, server OS/version.'},
+     yes:{result:'Service is running — check outbound connectivity and portal config.',detail:'1) Verify outbound UDP 8000 is open from the connector server<br>2) If server public IP changed: reconfigure in portal and re-run install script (Networks &gt; [Network] &gt; [Tunnel] &gt; Configuration)<br>3) AWS EC2: disable source/destination checks on instance NIC',escalate:'Open a support case with: output of sudo wg show, systemd service status, server OS/version.'},
      no:{result:'WireGuard service not running.',detail:'Start: <code>sudo systemctl start wg-quick@&lt;interface&gt;</code><br>Enable on boot: <code>sudo systemctl enable wg-quick@&lt;interface&gt;</code><br><br>If fails to start: <code>journalctl -u wg-quick@&lt;interface&gt; -n 50</code>',escalate:'If service cannot start, re-run the installation script from portal: Networks &gt; [Network] &gt; [Tunnel] &gt; Configuration.'}}}]},
   {id:'dns-fail',icon:'🔍',title:'DNS not resolving',desc:'Internal hostnames not resolving while connected',
    flow:[{q:'Is Private DNS configured in the portal?',body:'Check: Networks &gt; [Network] &gt; Private DNS — is a DNS server IP entered and enabled?',
     yes:{q:'Is "Use VPN Interface DNS" enabled in the agent?',body:'Agent UI &gt; Settings &gt; General, or Portal: Members &gt; User Profiles &gt; Agent Configuration.',
-     yes:{result:'DNS server connectivity or config issue.',detail:'1) Test DNS directly: <code>nslookup hostname.company.com &lt;dns-server-ip&gt;</code><br>2) Confirm DNS server reachable on port 53 (UDP and TCP) from the VPN address range<br>3) Confirm DNS server subnet is in the tunnel route',escalate:'Open Sev 3 case with: nslookup output connected/disconnected, DNS server IP, Private DNS config screenshot.'},
+     yes:{result:'DNS server connectivity or config issue.',detail:'1) Test DNS directly: <code>nslookup hostname.company.com &lt;dns-server-ip&gt;</code><br>2) Confirm DNS server reachable on port 53 (UDP and TCP) from the VPN address range<br>3) Confirm DNS server subnet is in the tunnel route',escalate:'Open a support case with: nslookup output connected/disconnected, DNS server IP, Private DNS config screenshot.'},
      no:{result:'Enable "Use VPN Interface DNS".',detail:'Portal: Members &gt; User Profiles &gt; [Profile] &gt; Agent Configuration &gt; Use VPN Interface DNS — toggle on and save. User reconnects the agent.',escalate:''}},
     no:{result:'Private DNS not configured.',detail:'Configure: Networks &gt; [Network] &gt; Private DNS<br>Enter the internal DNS server IP.<br>Ensure DNS server subnet is accessible through the SASE Network.',escalate:''}}]},
   {id:'swg-block',icon:'🚫',title:'Site blocked unexpectedly',desc:'Internet Access Policy blocking a site or app that should be allowed',
    flow:[{q:'Does the site load when the agent is DISCONNECTED?',body:'Disconnect from the VPN and test directly. This confirms whether SASE / Internet Access Policy is the cause.',
     yes:{q:'Is there a bypass rule configured for this destination?',body:'Check: Internet Access &gt; Bypass Rules.',
-     yes:{result:'Bypass rule not applying — case sensitivity issue.',detail:'Bypass rule destinations must be <strong>lowercase</strong>.<br><br>1) Edit the bypass rule — change destination to all lowercase<br>2) Sign out of agent and sign back in<br>3) Add both forms: <code>domain.com</code> AND <code>*.domain.com</code>',escalate:'If still not working after sign-out/in, open Sev 3 case with bypass rule screenshot and agent logs. To collect agent logs manually: support.perimeter81.com/docs/manual-log-collection'},
+     yes:{result:'Bypass rule not applying — case sensitivity issue.',detail:'Bypass rule destinations must be <strong>lowercase</strong>.<br><br>1) Edit the bypass rule — change destination to all lowercase<br>2) Sign out of agent and sign back in<br>3) Add both forms: <code>domain.com</code> AND <code>*.domain.com</code>',escalate:'If still not working after sign-out/in, open a support case with bypass rule screenshot and agent logs. To collect agent logs manually: support.checkpoint.com/results/sk/manual-log-collection'},
      no:{result:'No bypass rule — add one.',detail:'Internet Access &gt; Bypass Rules &gt; Add New Rule<br>Add destination: <code>domain.com</code> AND <code>*.domain.com</code> (both lowercase)<br>For certificate-pinning apps: also add the process name as program source.<br>After saving: sign out of agent and sign back in.',escalate:''}},
     no:{q:'Is the site still blocked when the SASE app is completely quit (not just disconnected)?',body:'Quit the Harmony SASE app entirely — not just disconnect — and test the site again. This distinguishes a SASE HTTPS inspection issue from an unrelated block.',
      yes:{result:'Not a SASE issue — site is blocked independently of SASE.',detail:'The site is blocked even when the SASE app is fully closed, meaning SASE is not the cause. Check: corporate proxy/firewall rules, DNS-level blocking, or the site itself being down. Test on mobile hotspot to confirm.'},
-     no:{result:'SASE HTTPS inspection is blocking the site — add a bypass rule.',detail:'The site loads when the app is fully quit but breaks when connected. This is an HTTPS inspection (SWG) issue even though the site loads when the VPN is "disconnected" (agent still intercepts traffic while connected).<br><br>Fix: add a bypass rule with HTTPS Inspection policy set to <strong>Bypass</strong>:<br>Internet Access &gt; Bypass Rules &gt; Add New Rule<br>1) Set destination to <code>domain.com</code> AND <code>*.domain.com</code> (lowercase)<br>2) Set <strong>HTTPS Inspection</strong> to <strong>Bypass</strong><br>3) Sign out of agent and sign back in<br><br>This is the correct setting when the issue is certificate inspection, not URL category blocking.',escalate:'If adding a bypass rule does not resolve it, open Sev 3 case with agent logs and a HAR file captured while the issue occurs. To collect agent logs manually: support.perimeter81.com/docs/manual-log-collection'}}}]},
+     no:{result:'SASE HTTPS inspection is blocking the site — add a bypass rule.',detail:'The site loads when the app is fully quit but breaks when connected. This is an HTTPS inspection (SWG) issue even though the site loads when the VPN is "disconnected" (agent still intercepts traffic while connected).<br><br>Fix: add a bypass rule with HTTPS Inspection policy set to <strong>Bypass</strong>:<br>Internet Access &gt; Bypass Rules &gt; Add New Rule<br>1) Set destination to <code>domain.com</code> AND <code>*.domain.com</code> (lowercase)<br>2) Set <strong>HTTPS Inspection</strong> to <strong>Bypass</strong><br>3) Sign out of agent and sign back in<br><br>This is the correct setting when the issue is certificate inspection, not URL category blocking.',escalate:'If adding a bypass rule does not resolve it, open a support case with agent logs and a HAR file captured while the issue occurs. To collect agent logs manually: support.checkpoint.com/results/sk/manual-log-collection'}}}]},
   {id:'dpc-fail',icon:'🛡',title:'DPC / posture check failing',desc:'User blocked from connecting due to device posture failure',
    flow:[{q:'Does the failure affect one user or multiple users?',body:'',
     yes:{label:'One user',q:'Which check is failing?',body:'Check: Devices &gt; Device Inventory &gt; select affected device — failure reason is shown.',
-     yes:{label:'AV/EDR not detected',result:'Antivirus/EDR not being detected.',detail:'1) Confirm AV/EDR is installed and running<br>2) Restart the AV/EDR software (some need relaunch after update to be detected)<br>3) For Harmony Endpoint DPC rules: delete rule, save, re-add rule, save again',escalate:'Open Sev 3 case with: DPC rule screenshot, AV/EDR product name and version, agent logs. To collect agent logs manually: support.perimeter81.com/docs/manual-log-collection'},
-     no:{label:'Domain join failing',result:'Domain membership check failing.',detail:'The DPC domain join check verifies that Windows recognises the machine as domain-joined. This requires the user to be actively signed in with a domain account in a <strong>local interactive Windows session</strong>.<br><br>Common causes:<br>1) User is logged into Windows with a local account, not their domain account — have them sign out and sign back in with their domain credentials<br>2) The machine is not actually domain-joined — verify in Windows: Settings &gt; Accounts &gt; Access work or school<br>3) Domain connectivity lost (DC unreachable) — check the machine can reach the domain controller on the network<br><br>Check the exact failure reason in the portal: Devices &gt; Device Inventory &gt; select device.',escalate:'Open Sev 3 case if the machine is confirmed domain-joined and the user is signed in with domain credentials but the check is still failing. Include: DPC rule screenshot, Windows domain join status, agent logs.'}},
-    no:{label:'Multiple users',result:'Rule change or software update changed detection.',detail:'1) Check portal: Devices &gt; Posture Check for recent rule changes<br>2) Review Devices &gt; Device Inventory for patterns in failing check<br>3) Check if a recent OS or security software update correlates with the timing',escalate:'Open Sev 2 case — multiple users blocked impacts business productivity.'}}]},
+     yes:{label:'AV/EDR not detected',result:'Antivirus/EDR not being detected.',detail:'1) Confirm AV/EDR is installed and running<br>2) Restart the AV/EDR software (some need relaunch after update to be detected)<br>3) For Harmony Endpoint DPC rules: delete rule, save, re-add rule, save again',escalate:'Open a support case with: DPC rule screenshot, AV/EDR product name and version, agent logs. To collect agent logs manually: support.checkpoint.com/results/sk/manual-log-collection'},
+     no:{label:'Domain join failing',result:'Domain membership check failing.',detail:'The DPC domain join check verifies that Windows recognises the machine as domain-joined. This requires the user to be actively signed in with a domain account in a <strong>local interactive Windows session</strong>.<br><br>Common causes:<br>1) User is logged into Windows with a local account, not their domain account — have them sign out and sign back in with their domain credentials<br>2) The machine is not actually domain-joined — verify in Windows: Settings &gt; Accounts &gt; Access work or school<br>3) Domain connectivity lost (DC unreachable) — check the machine can reach the domain controller on the network<br><br>Check the exact failure reason in the portal: Devices &gt; Device Inventory &gt; select device.',escalate:'Open a support case if the machine is confirmed domain-joined and the user is signed in with domain credentials but the check is still failing. Include: DPC rule screenshot, Windows domain join status, agent logs.'}},
+    no:{label:'Multiple users',result:'Rule change or software update changed detection.',detail:'1) Check portal: Devices &gt; Posture Check for recent rule changes<br>2) Review Devices &gt; Device Inventory for patterns in failing check<br>3) Check if a recent OS or security software update correlates with the timing',escalate:'Open a support case — multiple users blocked impacts business productivity.'}}]},
   {id:'perf-slow',icon:'🐢',title:'VPN slow / high latency',desc:'Connected but speeds poor or latency very high',
    flow:[{q:'Does the issue affect multiple users on the same gateway?',body:'Portal: Monitor &gt; Active Sessions — check how many users are on the same gateway.',
-    yes:{label:'Multiple users',result:'Gateway is overloaded — add capacity and consider split tunneling.',detail:'<strong>Gateway capacity check:</strong><br>Portal: Networks &gt; [Network] &gt; Gateways — check active session count. Each gateway handles up to <strong>100 concurrent users</strong> and ~1 Gbps.<br><br><strong>Immediate fix:</strong> Add a second gateway instance in the same region to load-balance users.<br><br><strong>Recommended long-term fix — Enable Split Tunneling:</strong><br>Full-tunnel mode routes ALL user traffic (including general internet browsing) through SASE, consuming gateway capacity and adding latency for non-business traffic. Split tunneling routes only internal/corporate traffic through SASE, dramatically reducing load.<br><br>Configure: Networks &gt; [Network] &gt; ⋯ &gt; Split Tunneling → set to <strong>Include</strong> mode → add only the subnets/FQDNs that need to go through SASE (internal apps, corporate resources). General internet traffic will go direct.',escalate:'If adding a second instance is not possible and the gateway is at capacity, open Sev 3 case.'},
+    yes:{label:'Multiple users',result:'Gateway is overloaded — add capacity and consider split tunneling.',detail:'<strong>Gateway capacity check:</strong><br>Portal: Networks &gt; [Network] &gt; Gateways — check active session count. Each gateway handles up to <strong>100 concurrent users</strong> and ~1 Gbps.<br><br><strong>Immediate fix:</strong> Add a second gateway instance in the same region to load-balance users.<br><br><strong>Recommended long-term fix — Enable Split Tunneling:</strong><br>Full-tunnel mode routes ALL user traffic (including general internet browsing) through SASE, consuming gateway capacity and adding latency for non-business traffic. Split tunneling routes only internal/corporate traffic through SASE, dramatically reducing load.<br><br>Configure: Networks &gt; [Network] &gt; ⋯ &gt; Split Tunneling → set to <strong>Include</strong> mode → add only the subnets/FQDNs that need to go through SASE (internal apps, corporate resources). General internet traffic will go direct.',escalate:'If adding a second instance is not possible and the gateway is at capacity, open a support case.'},
     no:{label:'One user',result:'Device or network-specific issue.',detail:'1) Disconnect and reconnect to force nearest gateway assignment<br>2) Switch to WireGuard protocol (fastest)<br>3) Test speed on mobile hotspot — if better, corporate ISP/network is the bottleneck',escalate:''}}]}
 ];
 
@@ -1164,6 +1253,17 @@ function renderFlowNode(node, idx){
         <p>${node.detail || node.result}</p>
         ${node.escalate ? `<div class="flow-escalate"><strong>When to escalate:</strong> ${node.escalate}</div>` : ''}
       </div>`;
+  } else if(node.options) {
+    // Multi-option buttons (more than yes/no)
+    const btnHtml = node.options.map((opt, i) =>
+      `<button class="flow-btn flow-btn-${i===0?'yes':'no'}" style="margin:3px 4px 3px 0"
+        onclick="answerOpt(${idx},${i})">${opt.label}</button>`
+    ).join('');
+    el.innerHTML = `
+      <div class="flow-step-num">Step ${idx + 1}</div>
+      <div class="flow-step-q">${node.q}</div>
+      ${node.body ? `<div class="flow-step-body">${node.body}</div>` : ''}
+      <div class="flow-btns">${btnHtml}</div>`;
   } else {
     const yesLbl = node.yes?.label || 'Yes';
     const noLbl  = node.no?.label  || 'No';
@@ -1180,6 +1280,17 @@ function renderFlowNode(node, idx){
   }
   container.appendChild(el);
   el.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+function answerOpt(idx, optIdx){
+  const el = document.getElementById('fn-' + idx);
+  el.classList.remove('current');
+  el.classList.add('done');
+  const node = nodeStack[idx];
+  const chosen = node.options[optIdx];
+  el.querySelector('.flow-btns').innerHTML =
+    `<span style="font-size:12px;color:var(--text-light)">&#8594; <strong style="color:var(--grey)">${chosen.label}</strong></span>`;
+  if(chosen.next) renderFlowNode(chosen.next, idx + 1);
 }
 
 function answerFlow(idx, answer){
@@ -1236,6 +1347,17 @@ function renderErrorGrid(){
       <div class="err-card-err">${e.e}</div>
       <div class="err-card-fix">&#8594; ${e.f}</div>
     </div>`).join('');
+}
+
+// ─── SIDEBAR TOGGLE ───────────────────────────────
+function toggleSidebar(){
+  const app = document.querySelector('.app');
+  const sidebar = document.querySelector('.sidebar');
+  const btn = document.getElementById('sidebarToggle');
+  const collapsed = app.classList.toggle('sidebar-collapsed');
+  sidebar.classList.toggle('collapsed', collapsed);
+  btn.style.left = collapsed ? '0' : '240px';
+  btn.textContent = collapsed ? '›' : '‹';
 }
 
 // INIT
