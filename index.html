@@ -129,16 +129,8 @@ html,body{height:100%;background:var(--white);color:var(--text);font-family:var(
 .err-card-fix{font-size:12px;color:var(--text-mid);}
 
 /* ─── GUIDE ─── */
-.guide-layout{display:grid;grid-template-columns:210px 1fr;height:100%;overflow:hidden;}
-.guide-toc{background:var(--grey-light);border-right:1px solid var(--border);overflow-y:auto;padding:12px 0;}
-.toc-sec{padding:12px 16px 4px;font-size:10px;font-weight:700;color:var(--text-light);letter-spacing:1.5px;text-transform:uppercase;}
-.toc-item{
-  padding:7px 18px;font-size:12.5px;color:var(--text-mid);cursor:pointer;
-  transition:all .1s;border-left:3px solid transparent;
-}
-.toc-item:hover{color:var(--grey);background:rgba(65,39,60,0.05);}
-.toc-item.active{color:var(--berry);border-left-color:var(--berry);background:rgba(238,12,93,0.06);font-weight:700;}
-.guide-body{overflow-y:auto;padding:32px 44px;}
+.guide-layout{display:flex;flex-direction:column;height:100%;overflow:hidden;}
+.guide-body{overflow-y:auto;padding:32px 44px;flex:1;}
 
 /* Guide content */
 .g-eyebrow{font-size:11px;font-weight:700;color:var(--berry);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
@@ -271,6 +263,27 @@ code.cmd .comment{color:rgba(255,255,255,0.4);}
 .sidebar.collapsed ~ .main .sidebar-toggle,
 body.sidebar-collapsed .sidebar-toggle{left:0;}
 
+/* ─── INTAKE FORM ─── */
+.intake-form{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--berry);padding:20px 22px;margin-bottom:18px;}
+.intake-form h3{font-size:13px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;}
+.intake-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;}
+.intake-field{display:flex;flex-direction:column;gap:4px;}
+.intake-field label{font-size:11px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:.5px;}
+.intake-field input,.intake-field select,.intake-field textarea{
+  font-family:var(--font);font-size:12.5px;padding:7px 10px;
+  border:1px solid var(--border);background:var(--grey-light);color:var(--text);outline:none;
+  transition:border-color .12s;
+}
+.intake-field input:focus,.intake-field select:focus,.intake-field textarea:focus{border-color:var(--berry);background:var(--white);}
+.intake-field textarea{resize:vertical;min-height:52px;}
+.intake-full{grid-column:1/-1;}
+
+/* ticket panel */
+.ticket-panel{margin-top:12px;}
+.ticket-form{background:var(--grey-light);border:1px solid var(--border);padding:18px 20px;margin-top:10px;}
+.ticket-form h4{font-size:12px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;}
+.ticket-output{background:var(--grey);border-left:3px solid var(--berry);padding:14px 16px;font-family:var(--mono);font-size:11.5px;color:#f2f2f2;line-height:1.9;white-space:pre-wrap;margin-top:12px;max-height:400px;overflow-y:auto;}
+
 /* ─── SCROLLBAR ─── */
 ::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-track{background:var(--grey-light);}
@@ -399,32 +412,6 @@ body.sidebar-collapsed .sidebar-toggle{left:0;}
 <!-- GUIDE -->
 <div class="page" id="page-guide">
   <div class="guide-layout">
-    <div class="guide-toc" id="guideToc">
-      <div class="toc-sec">Section 1 — Overview</div>
-      <div class="toc-item" onclick="showSection('infinity-portal')">Infinity Portal Setup</div>
-      <div class="toc-item active" onclick="showSection('overview')">What is Check Point SASE?</div>
-      <div class="toc-item" onclick="showSection('access-model')">Agent vs. Agentless</div>
-      <div class="toc-item" onclick="showSection('object-model')">Network Object Model</div>
-      <div class="toc-sec">Section 2 — Deployment</div>
-      <div class="toc-item" onclick="showSection('deploy')">Deployment Workflow</div>
-      <div class="toc-item" onclick="showSection('firewall-ports')">Firewall &amp; Ports</div>
-      <div class="toc-item" onclick="showSection('ipsec-config')">IPsec Configuration</div>
-      <div class="toc-item" onclick="showSection('connector')">P81 Connector</div>
-      <div class="toc-item" onclick="showSection('mdm-deploy')">MDM Deployment</div>
-      <div class="toc-item" onclick="showSection('pilot-rollout')">Pilot &amp; Rollout Guide</div>
-      <div class="toc-sec">Section 3 — Policies</div>
-      <div class="toc-item" onclick="showSection('policies')">Policy Framework</div>
-      <div class="toc-item" onclick="showSection('ztna-dpc')">ZTNA &amp; DPC</div>
-      <div class="toc-item" onclick="showSection('swg')">Internet Access Policy</div>
-      <div class="toc-sec">Section 4 — Troubleshooting</div>
-      <div class="toc-item" onclick="showSection('agent-issues')">Agent Issues</div>
-      <div class="toc-item" onclick="showSection('tunnel-ts')">Tunnel Troubleshooting</div>
-      <div class="toc-item" onclick="showSection('dns-ts')">DNS &amp; Internet Access Policy</div>
-      <div class="toc-item" onclick="showSection('escalation')">Escalation &amp; Severity</div>
-      <div class="toc-sec">Appendix</div>
-      <div class="toc-item" onclick="showSection('faq')">FAQ</div>
-      <div class="toc-item" onclick="showSection('reference')">Quick Reference</div>
-    </div>
     <div class="guide-body" id="guideBody"></div>
   </div>
 </div>
@@ -1107,9 +1094,9 @@ dig @&lt;dns-server-ip&gt; hostname.company.com</code>
 // TROUBLESHOOTER FLOWS
 // ═══════════════════════════════════════════════════════
 const SYMPTOMS=[
-  {id:'agent-connect',icon:'🔌',title:'Agent won\'t connect',desc:'Stuck connecting, spinning, or repeated disconnections',flow:[{q:'Which operating system is the affected device?',body:'',options:[{label:'Windows',next:{q:'Does the agent show &quot;Windows service failed to start in time&quot;?',body:'This specific error (pop-up on launch) indicates a .NET version conflict on the machine.',yes:{result:'Remove all .NET instances and reinstall the agent.',detail:'The agent ships with its own .NET version. Competing versions cause the service to fail.<br><br>1) Uninstall Harmony SASE from Add/Remove Programs<br>2) Uninstall ALL existing .NET / .NET Framework / SDK versions<br>3) Reboot<br>4) Reinstall from a freshly downloaded installer',escalate:'Open a support case with the Windows Event Log and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'},no:{q:'Does the issue occur on a mobile hotspot too?',body:'Hotspot bypasses the corporate firewall — this scopes whether the issue is the device or the network.',yes:{result:'Device-specific issue — work through these steps in order.',detail:'<strong>1) Sync the system clock</strong> — Settings &gt; Date &amp; Time &gt; Sync Now<br><br><strong>2) Switch protocol</strong> — Agent Settings &gt; Protocols &gt; try WireGuard → OpenVPN<br><br><strong>3) Verify endpoint connectivity</strong><br><code>tnc api.perimeter81.com -port 443</code><br><code>tnc sdpv2-agent-ws.perimeter81.com -port 443</code><br>Pre-v11.7: also <code>tnc sdp.perimeter81.com -port 5050</code><br><br><strong>4) Restart the agent</strong> — quit completely, wait 10s, relaunch<br><br><strong>5) Restart the device</strong><br><br><strong>6) Reinstall from a freshly downloaded installer</strong>',escalate:'Open a support case with agent version, OS, exact error, hotspot result, and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'},no:{result:'Corporate network is blocking required ports.',detail:'Run from the corporate network:<br><code>tnc sdpv2-agent-ws.perimeter81.com -port 443</code><br><code>tnc api.perimeter81.com -port 443</code><br>Pre-v11.7: also <code>tnc sdp.perimeter81.com -port 5050</code><br><br>Share results with the customer network team — the failing destination needs to be allowlisted.',escalate:'Open a support case with connectivity test output and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'}}}},{label:'macOS',next:{q:'Is the Harmony SASE Network Extension enabled and approved?',body:'macOS requires explicit approval before the agent can intercept any traffic.<br><br>Check: System Settings &gt; General &gt; Login Items &amp; Extensions &gt; Network Extensions — Harmony SASE must be toggled ON.<br><br>Verify from Terminal: <code>systemextensionsctl list</code> — look for <code>[activated enabled]</code>.<br><br>If missing entirely: <code>spctl kext-consent status</code> must return ENABLED — raise with MDM admin if disabled.',yes:{q:'Is DPC (Device Posture Check) configured for this tenant?',body:'If DPC is set to read files from the filesystem (osquery), a missing macOS TCC permission causes DPC to fail silently and can block login or session establishment for the whole tenant.',yes:{result:'Check all three required extensions and TCC permissions.',detail:'Required extensions:<br>• <strong>DNS Proxy System Extension</strong><br>• <strong>App Proxy Provider System Extension</strong><br>• <strong>System Extension Install</strong><br><br>Verify: <code>systemextensionsctl list</code> — all should show <code>[activated enabled]</code><br><br><strong>If DPC reads the filesystem (osquery):</strong> check System Settings &gt; Privacy &amp; Security — the agent may need Full Disk Access or Files &amp; Folders permission.',escalate:'Open a support case with systemextensionsctl output, DPC rule config, and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'},no:{result:'Verify all three required extensions are active.',detail:'Required extensions:<br>• <strong>DNS Proxy System Extension</strong><br>• <strong>App Proxy Provider System Extension</strong><br>• <strong>System Extension Install</strong><br><br>Check: <code>systemextensionsctl list</code> — all should show <code>[activated enabled]</code><br><br>If Internet Access Policy is enabled: confirm CA cert trusted in Keychain and Content Filter active under Network settings.',escalate:'Open a support case with systemextensionsctl output and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'}},no:{result:'Enable the Network Extension first — the agent cannot function without it.',detail:'1) System Settings &gt; General &gt; Login Items &amp; Extensions &gt; Network Extensions — toggle Harmony SASE ON<br>2) If showing \'waiting for user\': approve the toggle<br>3) If missing: <code>spctl kext-consent status</code> must return ENABLED — raise with MDM admin if disabled.',escalate:''}}},{label:'Linux',next:{result:'Linux troubleshooting steps.',detail:'<strong>1) Update kernel and packages:</strong><br><code>sudo apt update &amp;&amp; sudo apt upgrade</code> — outdated kernels cause WireGuard module failures<br><br><strong>2) Reinstall the agent:</strong><br><code>sudo apt install perimeter81_*_amd64.deb</code><br>Uninstall: <code>sudo apt remove perimeter81</code><br><br><strong>3) Connectivity steps:</strong><br>• Default protocol on Linux is OpenVPN — switch if stuck<br>• Force quit: <code>sudo killall perimeter81</code><br>• Restart networking: <code>sudo service network-manager restart</code><br>• Restart DNS: <code>sudo service resolvconf restart; sudo resolvconf -u</code><br><br><strong>4) Check daemon helper:</strong><br><code>sudo service perimeter81helper status</code><br>Logs: <code>tail -f /var/log/perimeter81helper.log</code><br><br><strong>5) Wipe agent state (last resort):</strong> remove <code>~/.config/Perimeter81</code><br><br><strong>6) resolv.conf permissions:</strong> <code>chmod 644 /etc/resolv.conf</code>',escalate:'Open a support case if still failing. Collect logs from Settings &gt; Support tab or <code>~/.config/Perimeter81/logs</code>.'}},{label:'iOS',next:{result:'iOS troubleshooting steps.',detail:'<strong>1) Switch protocol</strong> — Agent Settings &gt; Protocols &gt; try WireGuard → OpenVPN<br><br><strong>2) Try a different network</strong> — test mobile data vs. Wi-Fi<br><br><strong>3) Restart the app</strong> — force-close completely and reopen<br><br><strong>4) Reinstall</strong> from the App Store<br><br><strong>5) If stuck on loading screen</strong> — open sign-in URL in Chrome (not Safari):<br>US: <code>https://yourworkspace.perimeter81.com (open in Chrome — it will prompt to open the Harmony SASE app)</code><br>EU tenants: <code>https://yourworkspace.eu.sase.checkpoint.com</code> (open in Chrome)',escalate:'Open a support case if still failing. Full KB: support.checkpoint.com/results/sk/can-t-connect-perimeter-s-internet-connection-troubleshooting-guide'}},{label:'Android',next:{result:'Android troubleshooting steps.',detail:'<strong>1) Switch protocol</strong> — Agent Settings &gt; Protocols &gt; try WireGuard → OpenVPN<br><br><strong>2) Try a different network</strong> — test mobile data vs. Wi-Fi<br><br><strong>3) Restart the app</strong> — force-close and reopen<br><br><strong>4) Reinstall</strong> from Google Play<br><br><strong>5) Check for OS updates</strong> — ensure the device is on a supported Android version',escalate:'Open a support case if still failing. Full KB: support.checkpoint.com/results/sk/can-t-connect-perimeter-s-internet-connection-troubleshooting-guide'}}]}]},
+  {id:'agent-connect',icon:'🔌',title:'Agent won\'t connect',desc:'Stuck connecting, spinning, or repeated disconnections',flow:[{q:'Which operating system is the affected device?',body:'',options:[{label:'Windows',next:{q:'Does the agent show &quot;Windows service failed to start in time&quot;?',body:'This specific error (pop-up on launch) indicates a .NET version conflict on the machine.',yes:{result:'Remove all .NET instances and reinstall the agent.',detail:'The agent ships with its own .NET version. Competing versions cause the service to fail.<br><br>1) Uninstall Harmony SASE from Add/Remove Programs<br>2) Uninstall ALL existing .NET / .NET Framework / SDK versions<br>3) Reboot<br>4) Reinstall from a freshly downloaded installer',escalate:'Open a support case with the Windows Event Log and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'},no:{q:'Does the issue occur on a mobile hotspot too?',body:'Hotspot bypasses the corporate firewall. Also note: if on Wi-Fi, try a wired connection first — this rules out wireless instability.',yes:{result:'Device-specific issue — work through these steps in order.',detail:'<strong>1) Sync the system clock</strong> — Settings &gt; Date &amp; Time &gt; Sync Now<br><br><strong>2) Switch protocol</strong> — Agent Settings &gt; Protocols &gt; try WireGuard → OpenVPN<br><br><strong>3) Verify endpoint connectivity</strong><br><code>tnc api.perimeter81.com -port 443</code><br><code>tnc sdpv2-agent-ws.perimeter81.com -port 443</code><br>Pre-v11.7: also <code>tnc sdp.perimeter81.com -port 5050</code><br><br><strong>4) Restart the agent</strong> — quit completely, wait 10s, relaunch<br><br><strong>5) Restart the device</strong><br><br><strong>6) Reinstall from a freshly downloaded installer</strong>',escalate:'Open a support case with agent version, OS, exact error, hotspot result, and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'},no:{result:'Corporate network is blocking required ports.',detail:'Run from the corporate network:<br><code>tnc sdpv2-agent-ws.perimeter81.com -port 443</code><br><code>tnc api.perimeter81.com -port 443</code><br>Pre-v11.7: also <code>tnc sdp.perimeter81.com -port 5050</code><br><br>Share results with the customer network team — the failing destination needs to be allowlisted.',escalate:'Open a support case with connectivity test output and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'}}}},{label:'macOS',next:{q:'Is the Harmony SASE Network Extension enabled and approved?',body:'macOS requires explicit approval before the agent can intercept any traffic.<br><br>Check: System Settings &gt; General &gt; Login Items &amp; Extensions &gt; Network Extensions — Harmony SASE must be toggled ON.<br><br>Verify from Terminal: <code>systemextensionsctl list</code> — look for <code>[activated enabled]</code>.<br><br>If missing entirely: <code>spctl kext-consent status</code> must return ENABLED — raise with MDM admin if disabled.',yes:{q:'Is DPC (Device Posture Check) configured for this tenant?',body:'If DPC is set to read files from the filesystem (osquery), a missing macOS TCC permission causes DPC to fail silently and can block login or session establishment for the whole tenant.<br><br><strong>Also check:</strong> AV/EDR software (CrowdStrike, SentinelOne, etc.) can block the osquery process or deny TCC access — check EDR exclusions if DPC fails only on managed devices.',yes:{result:'Check all three required extensions and TCC permissions.',detail:'Required extensions:<br>• <strong>DNS Proxy System Extension</strong><br>• <strong>App Proxy Provider System Extension</strong><br>• <strong>System Extension Install</strong><br><br>Verify: <code>systemextensionsctl list</code> — all should show <code>[activated enabled]</code><br><br><strong>If DPC reads the filesystem (osquery):</strong> check System Settings &gt; Privacy &amp; Security — the agent may need Full Disk Access or Files &amp; Folders permission.',escalate:'Open a support case with systemextensionsctl output, DPC rule config, and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'},no:{result:'Verify all three required extensions are active.',detail:'Required extensions:<br>• <strong>DNS Proxy System Extension</strong><br>• <strong>App Proxy Provider System Extension</strong><br>• <strong>System Extension Install</strong><br><br>Check: <code>systemextensionsctl list</code> — all should show <code>[activated enabled]</code><br><br>If Internet Access Policy is enabled: confirm CA cert trusted in Keychain and Content Filter active under Network settings.',escalate:'Open a support case with systemextensionsctl output and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'}},no:{result:'Enable the Network Extension first — the agent cannot function without it.',detail:'1) System Settings &gt; General &gt; Login Items &amp; Extensions &gt; Network Extensions — toggle Harmony SASE ON<br>2) If showing \'waiting for user\': approve the toggle<br>3) If missing: <code>spctl kext-consent status</code> must return ENABLED — raise with MDM admin if disabled.',escalate:''}}},{label:'Linux',next:{result:'Linux troubleshooting steps.',detail:'<strong>1) Update kernel and packages:</strong><br><code>sudo apt update &amp;&amp; sudo apt upgrade</code> — outdated kernels cause WireGuard module failures<br><br><strong>2) Reinstall the agent:</strong><br><code>sudo apt install perimeter81_*_amd64.deb</code><br>Uninstall: <code>sudo apt remove perimeter81</code><br><br><strong>3) Connectivity steps:</strong><br>• Default protocol on Linux is OpenVPN — switch if stuck<br>• Force quit: <code>sudo killall perimeter81</code><br>• Restart networking: <code>sudo service network-manager restart</code><br>• Restart DNS: <code>sudo service resolvconf restart; sudo resolvconf -u</code><br><br><strong>4) Check daemon helper:</strong><br><code>sudo service perimeter81helper status</code><br>Logs: <code>tail -f /var/log/perimeter81helper.log</code><br><br><strong>5) Wipe agent state (last resort):</strong> remove <code>~/.config/Perimeter81</code><br><br><strong>6) resolv.conf permissions:</strong> <code>chmod 644 /etc/resolv.conf</code>',escalate:'Open a support case if still failing. Collect logs from Settings &gt; Support tab or <code>~/.config/Perimeter81/logs</code>.'}},{label:'iOS',next:{result:'iOS troubleshooting steps.',detail:'<strong>1) Switch protocol</strong> — Agent Settings &gt; Protocols &gt; try WireGuard → OpenVPN<br><br><strong>2) Try a different network</strong> — test mobile data vs. Wi-Fi<br><br><strong>3) Restart the app</strong> — force-close completely and reopen<br><br><strong>4) Reinstall</strong> from the App Store<br><br><strong>5) If stuck on loading screen</strong> — open sign-in URL in Chrome (not Safari):<br>US: <code>https://yourworkspace.perimeter81.com (open in Chrome — it will prompt to open the Harmony SASE app)</code><br>EU tenants: <code>https://yourworkspace.eu.sase.checkpoint.com</code> (open in Chrome)',escalate:'Open a support case if still failing. Full KB: support.checkpoint.com/results/sk/can-t-connect-perimeter-s-internet-connection-troubleshooting-guide'}},{label:'Android',next:{result:'Android troubleshooting steps.',detail:'<strong>1) Switch protocol</strong> — Agent Settings &gt; Protocols &gt; try WireGuard → OpenVPN<br><br><strong>2) Try a different network</strong> — test mobile data vs. Wi-Fi<br><br><strong>3) Restart the app</strong> — force-close and reopen<br><br><strong>4) Reinstall</strong> from Google Play<br><br><strong>5) Check for OS updates</strong> — ensure the device is on a supported Android version',escalate:'Open a support case if still failing. Full KB: support.checkpoint.com/results/sk/can-t-connect-perimeter-s-internet-connection-troubleshooting-guide'}}]}]},
   {id:'login-fail',icon:'🔐',title:'Login / auth error',desc:'Error on sign-in, wrong group, blocked account',
-   flow:[{q:'Is the user being redirected to their IdP (Okta, Azure AD, etc.) instead of seeing a password field?',body:'When a user types their email on the sign-in screen, SASE checks if the email domain matches any <strong>Domain Alias</strong> configured under Settings &gt; Identity Providers. If it matches, the password field disappears and authentication goes through the IdP — not the SASE database credentials.<br><br>If the user needs to sign in with their SASE database credentials instead (e.g. for admin access or testing), they must click <strong>"Sign in using email and password"</strong> at the bottom of the sign-in screen to bypass IdP redirect.',
+   flow:[{q:'Is the user being redirected to their IdP (Okta, Azure AD, etc.) instead of seeing a password field?',body:'<strong>First — note the IdP type:</strong> SAML 2.0, OIDC, Azure AD, Okta, Google Workspace, or SASE database credentials. This scopes the diagnostic and is required for the ticket.<br><br>When a user types their email on the sign-in screen, SASE checks if the email domain matches any <strong>Domain Alias</strong> configured under Settings &gt; Identity Providers. If it matches, the password field disappears and authentication goes through the IdP — not the SASE database credentials.<br><br>If the user needs to sign in with their SASE database credentials instead (e.g. for admin access or testing), they must click <strong>"Sign in using email and password"</strong> at the bottom of the sign-in screen to bypass IdP redirect.',
     yes:{label:'Yes — they want IdP login but it is failing',q:'Does the login fail with a "not in group" or access denied message?',body:'NOT_IN_ACCESS_GROUP does not appear in the agent UI — it only shows up inside a HAR file. You need to capture one to confirm the exact error.',
      yes:{result:'NOT_IN_ACCESS_GROUP — check Device Inventory first, then capture a HAR to confirm.',detail:'<strong>Step 1 — Check Device Inventory (workspace admins)</strong><br>Portal: Devices &gt; Device Inventory — find the affected user device and check the <strong>User Status</strong> column. NOT_IN_ACCESS_GROUP will show here without needing a HAR file.<br><br><strong>Step 2 — Capture a HAR file (if Device Inventory is inconclusive)</strong><br>The error also appears inside a HAR file from the browser login attempt:<br>1) Open Chrome on the affected device<br>2) Press F12 → go to the <strong>Network</strong> tab → ensure recording is on (red dot)<br>3) Reproduce the login attempt from start to finish<br>4) Right-click any request → <strong>Save all as HAR with content</strong><br>5) Open the HAR file in a text editor and search for <code>NOT_IN_ACCESS_GROUP</code><br><br><strong>Fix:</strong><br>1) Portal: Team &gt; Groups — verify the group name exactly matches what the IdP sends (case-sensitive, character-by-character)<br>2) Do not select "All Users" group — use the specific named group<br>3) Admin: Team &gt; Members &gt; [user] &gt; Sign Out All Devices, then have the user retry'},
      no:{result:'IdP login is failing for another reason.',detail:'1) Verify IdP is reachable and SAML/OIDC config has not changed recently (Settings &gt; Identity Providers)<br>2) Test a direct login via the IdP portal to rule out an IdP-side issue<br>3) Check if the account is blocked: Team &gt; Members &gt; ... &gt; Unblock (triggered by 10 consecutive failed logins)',escalate:'If IdP is confirmed working and the issue persists, open a support case with: exact error message, authentication method (SAML/OIDC), and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'}},
@@ -1125,7 +1112,7 @@ const SYMPTOMS=[
      no:{label:'Tunnel is down or unhealthy',result:'Fix the tunnel first — the resource is unreachable because its site-to-site connection is down.',detail:'<strong>IPsec tunnel down?</strong> Go to the IPsec Tunnel Troubleshooting flow for step-by-step diagnosis.<br><br><strong>Perimeter 81 Connector down?</strong> Go to the Connector Offline flow.<br><br>Common quick checks:<br>1) Portal: Networks &gt; [Network] &gt; Gateways — confirm the gateway itself is online<br>2) IPsec: verify remote peer IP has not changed (Networks &gt; Sites &gt; [Site] &gt; Edit)<br>3) Connector: <code>sudo systemctl status wg-quick@&lt;interface&gt;</code> on the Linux server<br>4) Check Operational Events for tunnel errors: Portal &gt; Monitor &amp; Logs &gt; Operational Events',escalate:'If the tunnel cannot be restored after basic checks, open a support case — users cannot reach internal resources until the tunnel is restored.'}},
     no:{result:'User is connected to the wrong Network.',detail:'Disconnect and reconnect, selecting the correct Network from the agent UI.',escalate:''}}]},
   {id:'tunnel-down',icon:'🔗',title:'IPsec tunnel is down',desc:'Site-to-site tunnel showing as down or unstable',
-   flow:[{q:'Did the remote device\'s public IP change recently?',body:'A changed public IP is one of the most common causes of sudden tunnel failure after a period of working correctly.',
+   flow:[{q:'Did the remote device\'s public IP change recently?',body:'<strong>First — note the remote device:</strong> make, model, and firmware version (e.g. Cisco ASA 9.16, Fortigate 7.4, SonicWall Gen7). Some have known quirks — SonicWall Gen7/SonicOS 7+ requires IKEv1 instead of IKEv2. You will need this for the ticket.<br><br>A changed public IP is one of the most common causes of sudden tunnel failure after a period of working correctly.',
     yes:{result:'Update the remote peer IP in the SASE portal.',detail:'Portal: Networks &gt; Sites &gt; [Site Name] &gt; options &gt; Edit<br>Update the Remote Gateway IP to the new public IP and save.',escalate:'If still not coming up after IP update, check Phase 1 parameters and PSK on both sides.'},
     no:{q:'Does the remote device show the tunnel as up?',body:'Check the remote firewall/router management interface for tunnel state.',
      yes:{result:'PSK or parameter mismatch.',detail:'1) Re-enter PSK on both sides (check for trailing whitespace)<br>2) Verify all Phase 1/2 parameters match exactly<br>3) Check Operational Events: Portal &gt; Monitor &amp; Logs &gt; Operational Events'},
@@ -1148,7 +1135,7 @@ const SYMPTOMS=[
      yes:{result:'DNS server connectivity or config issue.',detail:'1) Test DNS directly: <code>nslookup hostname.company.com &lt;dns-server-ip&gt;</code><br>2) Confirm DNS server reachable on port 53 (UDP and TCP) from the VPN address range<br>3) Confirm DNS server subnet is in the tunnel route',escalate:'Open a support case with: nslookup output connected/disconnected, DNS server IP, Private DNS config screenshot.'},
      no:{result:'Enable "Use VPN Interface DNS".',detail:'Portal: Members &gt; User Profiles &gt; [Profile] &gt; Agent Configuration &gt; Use VPN Interface DNS — toggle on and save. User reconnects the agent.',escalate:''}},
     no:{result:'Private DNS not configured.',detail:'Configure: Networks &gt; [Network] &gt; Private DNS<br>Enter the internal DNS server IP.<br>Ensure DNS server subnet is accessible through the SASE Network.',escalate:''}}]},
-  {id:'swg-block',icon:'🚫',title:'Site or components blocked unexpectedly',desc:'Internet Access Policy blocking a site, app, or components within a page (graphics, SDKs, third-party services)',flow:[{q:'Does the full site load but parts of it are broken — missing widgets, blank graphs, console errors, or broken third-party content?',body:'Internet Access Policy inspects ALL traffic from the browser, including third-party domains a page loads. Certificate-pinned services, analytics SDKs, charting libraries, and embedded tools can fail even when the main site loads fine.',yes:{result:'Use browser dev tools to identify which specific domains or components are being blocked, then add targeted bypass rules.',detail:'<strong>Step 1 — Open browser Console</strong><br>Chrome / Edge: press <code>F12</code> → <strong>Console</strong> tab. Look for red errors:<br>• <code>net::ERR_CERT_AUTHORITY_INVALID</code> — certificate pinning conflict with HTTPS inspection<br>• <code>net::ERR_FAILED</code> / <code>net::ERR_CONNECTION_REFUSED</code> — request being blocked<br>• <code>Mixed Content</code> — HTTPS inspection causing cert mismatch on a sub-resource<br><br><strong>Step 2 — Check the Network tab for failed requests</strong><br>In <strong>Network</strong> tab, reload the page. Filter by <strong>Failed</strong> or look for red rows. Note the exact domain names of failed requests (e.g. <code>cdn.charting-library.com</code>, <code>analytics.example.com</code>).<br><br><strong>Step 3 — Add a bypass rule for each blocked domain</strong><br>Internet Access &gt; Bypass Rules &gt; Add New Rule:<br>1) Destination: <code>domain.com</code> AND <code>*.domain.com</code> (both, lowercase)<br>2) Set <strong>HTTPS Inspection</strong> to <strong>Bypass</strong><br>3) Sign out of agent and sign back in after saving<br><br><strong>Repeat</strong> the dev tools check after each rule — complex pages often have multiple certificate-pinned dependencies each needing their own bypass rule.',escalate:'If you cannot identify the blocked domain from console output, capture a HAR file (F12 → Network → right-click any request → Save all as HAR) and open a support case.'},no:{q:'Does the full site load when you are fully signed out of the agent?',body:'<strong>Sign out of the agent entirely</strong> (not just disconnect from the VPN) and test the site. Web Security applies whenever the agent is signed in — even when not connected to a network. Signing out is the only reliable way to confirm whether SASE is the cause.',yes:{q:'Is there a bypass rule configured for this destination?',body:'Check: Internet Access &gt; Bypass Rules.',yes:{result:'Bypass rule not applying — case sensitivity issue.',detail:'Bypass rule destinations must be <strong>lowercase</strong>.<br><br>1) Edit the bypass rule — change destination to all lowercase<br>2) Sign out of agent and sign back in<br>3) Add both forms: <code>domain.com</code> AND <code>*.domain.com</code>',escalate:'If still not working after sign-out/in, open a support case with bypass rule screenshot and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'},no:{result:'No bypass rule — add one.',detail:'Internet Access &gt; Bypass Rules &gt; Add New Rule<br>Destination: <code>domain.com</code> AND <code>*.domain.com</code> (both lowercase)<br>Set <strong>HTTPS Inspection</strong> to <strong>Bypass</strong> if certificate pinning is involved.<br>After saving: sign out of agent and sign back in.',escalate:''}},no:{q:'Is the site still blocked when you are fully signed out of the agent?',body:'Sign out of the agent completely (Agent menu → Sign Out) or quit the app, then test the site. This is the correct test — disconnecting from the VPN is not sufficient because Web Security still applies while signed in.',yes:{result:'Not a SASE issue — site is blocked independently of SASE.',detail:'The site is blocked even with SASE fully closed, so SASE is not the cause. Check: corporate proxy/firewall rules, DNS-level blocking, or the site being down. Test on mobile hotspot to confirm.'},no:{result:'SASE HTTPS inspection is blocking it — add a bypass rule.',detail:'The site loads when SASE is fully quit but fails when connected. This is an HTTPS inspection issue — the agent applies Web Security even when the VPN shows as \'disconnected\' — Web Security only stops when you sign out of the agent entirely.<br><br>Internet Access &gt; Bypass Rules &gt; Add New Rule:<br>1) Destination: <code>domain.com</code> AND <code>*.domain.com</code> (lowercase)<br>2) Set <strong>HTTPS Inspection</strong> to <strong>Bypass</strong><br>3) Sign out of agent and sign back in',escalate:'If bypass rule does not resolve it, open a support case with agent logs and a HAR file. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'}}}}]},
+  {id:'swg-block',icon:'🚫',title:'Site or components blocked unexpectedly',desc:'Internet Access Policy blocking a site, app, or components within a page (graphics, SDKs, third-party services)',flow:[{q:'Does the full site load but parts of it are broken — missing widgets, blank graphs, console errors, or broken third-party content?',body:'Internet Access Policy inspects ALL traffic from the browser, including third-party domains a page loads. Certificate-pinned services, analytics SDKs, charting libraries, and embedded tools can fail even when the main site loads fine.<br><br><strong>Also check upfront:</strong> is any other security or DNS software active on this device (Cisco Umbrella, Zscaler, Netskope, another VPN, custom DNS)? Overlapping inspection tools can cause certificate conflicts independent of SASE.',yes:{result:'Use browser dev tools to identify which specific domains or components are being blocked, then add targeted bypass rules.',detail:'<strong>Step 1 — Open browser Console</strong><br>Chrome / Edge: press <code>F12</code> → <strong>Console</strong> tab. Look for red errors:<br>• <code>net::ERR_CERT_AUTHORITY_INVALID</code> — certificate pinning conflict with HTTPS inspection<br>• <code>net::ERR_FAILED</code> / <code>net::ERR_CONNECTION_REFUSED</code> — request being blocked<br>• <code>Mixed Content</code> — HTTPS inspection causing cert mismatch on a sub-resource<br><br><strong>Step 2 — Check the Network tab for failed requests</strong><br>In <strong>Network</strong> tab, reload the page. Filter by <strong>Failed</strong> or look for red rows. Note the exact domain names of failed requests (e.g. <code>cdn.charting-library.com</code>, <code>analytics.example.com</code>).<br><br><strong>Step 3 — Add a bypass rule for each blocked domain</strong><br>Internet Access &gt; Bypass Rules &gt; Add New Rule:<br>1) Destination: <code>domain.com</code> AND <code>*.domain.com</code> (both, lowercase)<br>2) Set <strong>HTTPS Inspection</strong> to <strong>Bypass</strong><br>3) Sign out of agent and sign back in after saving<br><br><strong>Repeat</strong> the dev tools check after each rule — complex pages often have multiple certificate-pinned dependencies each needing their own bypass rule.',escalate:'If you cannot identify the blocked domain from console output, capture a HAR file (F12 → Network → right-click any request → Save all as HAR) and open a support case.'},no:{q:'Does the full site load when you are fully signed out of the agent?',body:'<strong>Sign out of the agent entirely</strong> (not just disconnect from the VPN) and test the site. Web Security applies whenever the agent is signed in — even when not connected to a network. Signing out is the only reliable way to confirm whether SASE is the cause.',yes:{q:'Is there a bypass rule configured for this destination?',body:'Check: Internet Access &gt; Bypass Rules.',yes:{result:'Bypass rule not applying — case sensitivity issue.',detail:'Bypass rule destinations must be <strong>lowercase</strong>.<br><br>1) Edit the bypass rule — change destination to all lowercase<br>2) Sign out of agent and sign back in<br>3) Add both forms: <code>domain.com</code> AND <code>*.domain.com</code>',escalate:'If still not working after sign-out/in, open a support case with bypass rule screenshot and agent logs. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'},no:{result:'No bypass rule — add one.',detail:'Internet Access &gt; Bypass Rules &gt; Add New Rule<br>Destination: <code>domain.com</code> AND <code>*.domain.com</code> (both lowercase)<br>Set <strong>HTTPS Inspection</strong> to <strong>Bypass</strong> if certificate pinning is involved.<br>After saving: sign out of agent and sign back in.',escalate:''}},no:{q:'Is the site still blocked when you are fully signed out of the agent?',body:'Sign out of the agent completely (Agent menu → Sign Out) or quit the app, then test the site. This is the correct test — disconnecting from the VPN is not sufficient because Web Security still applies while signed in.',yes:{result:'Not a SASE issue — site is blocked independently of SASE.',detail:'The site is blocked even with SASE fully closed, so SASE is not the cause. Check: corporate proxy/firewall rules, DNS-level blocking, or the site being down. Test on mobile hotspot to confirm.'},no:{result:'SASE HTTPS inspection is blocking it — add a bypass rule.',detail:'The site loads when SASE is fully quit but fails when connected. This is an HTTPS inspection issue — the agent applies Web Security even when the VPN shows as \'disconnected\' — Web Security only stops when you sign out of the agent entirely.<br><br>Internet Access &gt; Bypass Rules &gt; Add New Rule:<br>1) Destination: <code>domain.com</code> AND <code>*.domain.com</code> (lowercase)<br>2) Set <strong>HTTPS Inspection</strong> to <strong>Bypass</strong><br>3) Sign out of agent and sign back in',escalate:'If bypass rule does not resolve it, open a support case with agent logs and a HAR file. Collect logs: support.checkpoint.com/results/sk/manual-log-collection'}}}}]},
   {id:'dpc-fail',icon:'🛡',title:'DPC / posture check failing',desc:'User blocked from connecting due to device posture failure',
    flow:[{q:'Does the failure affect one user or multiple users?',body:'',
     yes:{label:'One user',q:'Which check is failing?',body:'Check: Devices &gt; Device Inventory &gt; select affected device — failure reason is shown.',
@@ -1156,7 +1143,7 @@ const SYMPTOMS=[
      no:{label:'Domain join failing',result:'Domain membership check failing.',detail:'The DPC domain join check verifies that Windows recognises the machine as domain-joined. This requires the user to be actively signed in with a domain account in a <strong>local interactive Windows session</strong>.<br><br>Common causes:<br>1) User is logged into Windows with a local account, not their domain account — have them sign out and sign back in with their domain credentials<br>2) The machine is not actually domain-joined — verify in Windows: Settings &gt; Accounts &gt; Access work or school<br>3) Domain connectivity lost (DC unreachable) — check the machine can reach the domain controller on the network<br><br>Check the exact failure reason in the portal: Devices &gt; Device Inventory &gt; select device.',escalate:'Open a support case if the machine is confirmed domain-joined and the user is signed in with domain credentials but the check is still failing. Include: DPC rule screenshot, Windows domain join status, agent logs.'}},
     no:{label:'Multiple users',result:'Rule change or software update changed detection.',detail:'1) Check portal: Devices &gt; Posture Check for recent rule changes<br>2) Review Devices &gt; Device Inventory for patterns in failing check<br>3) Check if a recent OS or security software update correlates with the timing',escalate:'Open a support case — multiple users blocked impacts business productivity.'}}]},
   {id:'perf-slow',icon:'🐢',title:'VPN slow / high latency',desc:'Connected but speeds poor or latency very high',
-   flow:[{q:'Does the issue affect multiple users on the same gateway?',body:'Portal: Monitor &gt; Active Sessions — check how many users are on the same gateway.',
+   flow:[{q:'Does the issue affect multiple users on the same gateway?',body:'<strong>First — check connection type:</strong> is the user on Wi-Fi or wired (LAN)? Wi-Fi interference is a very common cause of perceived VPN slowness. Ask them to test on a wired connection before going further.<br><br>Also note: are the slow resources public (internet) or private (internal behind a tunnel)? This changes the diagnostic path.<br><br>Portal: Monitor &gt; Active Sessions — check how many users are on the same gateway.',
     yes:{label:'Multiple users',result:'Gateway is overloaded — add capacity and consider split tunneling.',detail:'<strong>Gateway capacity check:</strong><br>Portal: Networks &gt; [Network] &gt; Gateways — check active session count. Each gateway handles up to <strong>100 concurrent users</strong> and ~1 Gbps.<br><br><strong>Immediate fix:</strong> Add a second gateway instance in the same region to load-balance users.<br><br><strong>Recommended long-term fix — Enable Split Tunneling:</strong><br>Full-tunnel mode routes ALL user traffic (including general internet browsing) through SASE, consuming gateway capacity and adding latency for non-business traffic. Split tunneling routes only internal/corporate traffic through SASE, dramatically reducing load.<br><br>Configure: Networks &gt; [Network] &gt; ⋯ &gt; Split Tunneling → set to <strong>Include</strong> mode → add only the subnets/FQDNs that need to go through SASE (internal apps, corporate resources). General internet traffic will go direct.',escalate:'If adding a second instance is not possible and the gateway is at capacity, open a support case.'},
     no:{label:'One user',result:'Device or network-specific issue.',detail:'1) Disconnect and reconnect to force nearest gateway assignment<br>2) Switch to WireGuard protocol (fastest)<br>3) Test speed on mobile hotspot — if better, corporate ISP/network is the bottleneck',escalate:''}}]}
 ];
@@ -1214,11 +1201,7 @@ function showSection(id){
   const d=SECTIONS[id]; if(!d) return;
   const b=document.getElementById('guideBody');
   b.innerHTML=`<div class="g-eyebrow">${d.ey}</div><div class="g-title">${d.ti}</div><div class="g-desc">${d.de}</div>${d.html}`;
-  document.querySelectorAll('.toc-item').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.toc-item').forEach(t=>{
-    const oc=t.getAttribute('onclick')||'';
-    if(oc.includes("'"+id+"'")) t.classList.add('active');
-  });
+  // (inner TOC removed — nav handled by main sidebar)
   b.scrollTop=0;
 }
 
@@ -1279,7 +1262,11 @@ function renderFlowNode(node, idx){
         <h4>&#10003; Resolution</h4>
         <p>${node.detail || node.result}</p>
         ${node.escalate ? `<div class="flow-escalate"><strong>When to escalate:</strong> ${node.escalate}</div>` : ''}
-      </div>`;
+      </div>
+      <button class="flow-btn flow-btn-alt" style="margin-top:12px;padding:8px 16px;font-size:12px;" onclick="showTicketPanel(${idx})">
+        📋 Generate support ticket template
+      </button>
+      <div class="ticket-panel" id="ticket-${idx}" style="display:none;"></div>`;
   } else if(node.options) {
     // Multi-option buttons (more than yes/no)
     const btnHtml = node.options.map((opt, i) =>
@@ -1353,6 +1340,7 @@ function resetFlow(){
   document.getElementById('flowSteps').innerHTML = '';
   document.getElementById('tsFlow').classList.remove('open');
   document.querySelectorAll('.sym-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.ticket-panel').forEach(p => {p.style.display='none';p.innerHTML='';});
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1385,6 +1373,391 @@ function toggleSidebar(){
   sidebar.classList.toggle('collapsed', collapsed);
   btn.style.left = collapsed ? '0' : '240px';
   btn.textContent = collapsed ? '›' : '‹';
+}
+
+// ─── TICKET TEMPLATE ───────────────────────────────
+function buildTicket(sym, path, intake, extraValues, extraFields){
+  const id = sym ? sym.id : '';
+  const title = sym ? sym.title : '(unknown)';
+
+  // ── Extract resolution text from the flow result node ──────────────────
+  // Walk the nodeStack to find the terminal result node
+  let resolutionText = '';
+  let escalateText = '';
+  for(let i = nodeStack.length - 1; i >= 0; i--){
+    const n = nodeStack[i];
+    if(n && n.result !== undefined){
+      // Strip HTML tags for plain text
+      const strip = s => s ? s.replace(/<[^>]+>/g, '').replace(/&gt;/g,'>').replace(/&lt;/g,'<').replace(/&amp;/g,'&').replace(/&#10003;/g,'✓') : '';
+      resolutionText = strip(n.detail || n.result);
+      escalateText = strip(n.escalate || '');
+      break;
+    }
+  }
+
+  // ── Steps taken summary ───────────────────────────────────────────────
+  const attempted = path.length
+    ? path.map((p,i) => {
+        const lines = p.split('\n');
+        const q = lines[0].replace('Q: ','');
+        const a = lines[1] ? lines[1].replace('A: ','') : '';
+        return (i+1) + '. ' + q + (a ? ' → ' + a : '');
+      }).join('\n')
+    : '(none recorded)';
+
+  // ── Recreate summary (first step question + answer) ───────────────────
+  const recreate = path.length
+    ? 'Symptom: ' + title + '\n' + path.slice(0,2).map(p => {
+        const lines = p.split('\n');
+        return lines[0].replace('Q: ','') + (lines[1] ? ' (' + lines[1].replace('A: ','') + ')' : '');
+      }).join('. ')
+    : title;
+
+  // Intake values (with fallback blanks)
+  const iv = intake || {};
+  const fill = (v, fallback) => (v && v !== '— select —') ? v : fallback;
+
+  // Extra field values as additional lines
+  const extraLines = [];
+  if(extraFields && extraFields.length && extraValues){
+    extraFields.forEach(f => {
+      const v = extraValues[f.id] || '';
+      if(v && v !== '— select —') extraLines.push(f.label + ': ' + v);
+      else extraLines.push(f.label + ': ');
+    });
+  }
+
+  // Base fields — always included
+  const base = [
+    'Tenant ID: ' + fill(iv.tenant,''),
+    '',
+    'What is the issue: ' + title,
+    '',
+    'What is the expected behavior: ',
+    '',
+    'Respondent time-zone: ' + fill(iv.tz,''),
+    '',
+    'Impact (how many users/machines affected): ' + fill(iv.impact,''),
+    '',
+    'When did the issue start: ' + fill(iv.when,''),
+    '',
+    'Did it work in the past: ' + fill(iv.worked,''),
+    '',
+    'What changes were done recently if any: ' + fill(iv.changes,''),
+    '',
+    'How to recreate the issue (short summary):',
+    recreate,
+    '',
+    'Steps performed by support so far:',
+    attempted,
+    '',
+    resolutionText ? ('Resolution reached by troubleshooter:\n' + resolutionText) : '',
+    resolutionText ? '' : '',
+    escalateText ? ('Escalation note: ' + escalateText) : '',
+    '',
+    'Notes: ',
+  ].filter(l => l !== null);
+
+  // Symptom-specific additional fields
+  const extras = {
+    'agent-connect': [
+      '',
+      '--- Agent / Connectivity ---',
+      'Agent logs + Timestamp (must have): ',
+      'Exact timestamps of occurrences: ',
+      'OS and agent version: ',
+      'Any additional software installed (antivirus, security endpoints): ',
+      'Does it happen after sleep or a specific action: ',
+      'Internet connection type (wired / Wi-Fi / mobile): ',
+      'Issue reproducible on a mobile hotspot: ',
+    ],
+    'login-fail': [
+      '',
+      '--- Authentication / IdP ---',
+      'IdP type (SAML 2.0 / OIDC / Google / Azure / Okta): ',
+      'Link to the IdP setup guide followed: ',
+      'Configuration on both ends match (confirmed): ',
+      'HAR file attached: ☐ Yes  ☐ No',
+      'Agent logs + Timestamp: ',
+    ],
+    'no-resource': [
+      '',
+      '--- Private Access / Tunnel ---',
+      'Type of tunnel (WireGuard Connector / IPsec): ',
+      'Testing IP of a resource behind the tunnel that should respond: ',
+      'Routing confirmed correct: ',
+      'Subnets confirmed — no overlap: ',
+      'Screenshots of remote router configuration attached: ',
+      'Agent logs + Timestamp: ',
+    ],
+    'tunnel-down': [
+      '',
+      '--- IPsec Tunnel ---',
+      'Type of tunnel (IPsec / WireGuard Connector): ',
+      'Configuration on both ends match — include screenshots of remote site config: ',
+      'Routing correct: ',
+      'Subnets match (policy-based): ',
+      'Did the customer follow the KB setup guide: ',
+      'Screenshots of remote router configuration attached: ',
+    ],
+    'connector-down': [
+      '',
+      '--- WireGuard Connector ---',
+      'Linux server OS and version: ',
+      'Output of: sudo wg show',
+      'Output of: sudo systemctl status wg-quick@<interface>',
+      'Has the server public or internal IP changed recently: ',
+      'IP forwarding enabled (net.ipv4.ip_forward): ',
+    ],
+    'dns-fail': [
+      '',
+      '--- DNS ---',
+      'Is DNS public or private: ',
+      'If private — configured at network level or region level: ',
+      'Issue specific to one domain or all domains failing: ',
+      '"Use Interface DNS" option enabled: ',
+      'nslookup / dig output for affected domain (connected): ',
+      'nslookup / dig output for affected domain (signed out): ',
+      'Can the DNS server IP be pinged: ',
+      'Agent logs + Timestamp (if single user): ',
+    ],
+    'swg-block': [
+      '',
+      '--- Internet Access Policy (SWG) ---',
+      'Agent logs + Timestamp: ',
+      'What is the customer trying to achieve (use case): ',
+      'Is it reproduced with Support Access: ',
+      'Top-level domain not blocked in categories: ',
+      'Is the site in a rule or web category: ',
+      'Bypass rules tried: ',
+      'Other software installed (DNS servers, antivirus, security endpoints): ',
+      'HAR file attached: ☐ Yes  ☐ No',
+      'Browser console errors (F12 > Console): ',
+    ],
+    'dpc-fail': [
+      '',
+      '--- Device Posture Check ---',
+      'Which posture check is failing (from Devices > Device Inventory): ',
+      'Agent logs + Timestamp: ',
+      'OS and agent version: ',
+      'Any security software installed (AV, EDR, endpoint): ',
+    ],
+    'perf-slow': [
+      '',
+      '--- Speed / Performance ---',
+      'Related to public or private resources: ',
+      'Specific services slow (Web / RDP / Video / other): ',
+      'All day or specific times: ',
+      'User location: ',
+      'Nearest gateway location: ',
+      'Resource location: ',
+      'WiFi or LAN cable: ',
+      'Speedtest (speedtest.net) with agent DISCONNECTED to nearest server: ',
+      'Speedtest with agent DISCONNECTED to gateway city: ',
+      'Speedtest with agent CONNECTED to gateway: ',
+      'Agent logs + Timestamp: ',
+    ],
+  };
+
+  const extra = extras[id] || [];
+  const allExtra = extraLines.length ? [...extraLines, ''] : extra;
+  return [...base, ...(extraLines.length ? ['', '--- Issue-specific details ---', ...extraLines] : extra)].join('\n');
+}
+
+// Symptom-specific extra fields for the ticket form
+const EXTRA_FIELDS = {
+  'agent-connect': [
+    {id:'ef-os',label:'OS and agent version',type:'text',placeholder:'e.g. Windows 11 / agent 12.6'},
+    {id:'ef-hotspot',label:'Reproducible on mobile hotspot?',type:'select',opts:['— select —','Yes — also fails on hotspot','No — works on hotspot','Not tested']},
+    {id:'ef-extra-sw',label:'Additional software installed (AV, EDR)?',type:'text',placeholder:'e.g. CrowdStrike, Bitdefender'},
+    {id:'ef-conn-type',label:'Connection type',type:'select',opts:['— select —','Wi-Fi','LAN cable','Mobile data','Other']},
+    {id:'ef-sleep',label:'Happens after sleep or specific action?',type:'text',placeholder:'e.g. After lid close / after network switch'},
+  ],
+  'login-fail': [
+    {id:'ef-idp',label:'IdP type',type:'select',opts:['— select —','Azure AD / Entra','Okta','Google Workspace','SAML 2.0 (other)','OIDC (other)','SASE DB credentials']},
+    {id:'ef-har',label:'HAR file available?',type:'select',opts:['— select —','Yes — will attach','No — cannot capture','Not applicable']},
+  ],
+  'no-resource': [
+    {id:'ef-tunnel-type',label:'Tunnel type',type:'select',opts:['— select —','IPsec','WireGuard Connector','None (agentless ZTNA)']},
+    {id:'ef-test-ip',label:'Testing IP of resource that should respond',type:'text',placeholder:'e.g. 192.168.10.50'},
+    {id:'ef-routing',label:'Routing confirmed correct?',type:'select',opts:['— select —','Yes','No','Not checked']},
+    {id:'ef-overlap',label:'Subnet overlap confirmed — none?',type:'select',opts:['— select —','Confirmed no overlap','Possible overlap found','Not checked']},
+  ],
+  'tunnel-down': [
+    {id:'ef-tunnel-type',label:'Tunnel type',type:'select',opts:['— select —','IPsec','WireGuard Connector']},
+    {id:'ef-remote-vendor',label:'Remote device make / model / firmware',type:'text',placeholder:'e.g. Cisco ASA 9.16 / Fortigate 7.4'},
+    {id:'ef-params-match',label:'Parameters confirmed identical on both sides?',type:'select',opts:['— select —','Yes','No — mismatch found','Not verified']},
+    {id:'ef-screenshots',label:'Remote router config screenshots available?',type:'select',opts:['— select —','Yes — will attach','No']},
+  ],
+  'connector-down': [
+    {id:'ef-linux-os',label:'Linux server OS and version',type:'text',placeholder:'e.g. Ubuntu 22.04'},
+    {id:'ef-wg-show',label:'Output of: sudo wg show',type:'textarea',placeholder:'Paste output here'},
+    {id:'ef-ip-changed',label:'Server public or internal IP changed recently?',type:'select',opts:['— select —','Yes — public IP changed','Yes — internal IP changed','No','Unknown']},
+  ],
+  'dns-fail': [
+    {id:'ef-dns-type',label:'DNS type',type:'select',opts:['— select —','Public DNS','Private DNS — network level','Private DNS — region level']},
+    {id:'ef-dns-scope',label:'Scope of failure',type:'select',opts:['— select —','Specific domain(s) only','All domains failing']},
+    {id:'ef-nslookup',label:'nslookup / dig output (connected)',type:'textarea',placeholder:'Paste output here'},
+    {id:'ef-interface-dns',label:'"Use Interface DNS" enabled?',type:'select',opts:['— select —','Yes','No','Unknown']},
+  ],
+  'swg-block': [
+    {id:'ef-domain',label:'Domain / URL being blocked',type:'text',placeholder:'e.g. analytics.example.com'},
+    {id:'ef-use-case',label:'What is the customer trying to achieve?',type:'text',placeholder:'e.g. Access BI dashboard with embedded charts'},
+    {id:'ef-bypass-tried',label:'Bypass rules already tried?',type:'select',opts:['— select —','Yes — did not help','Yes — helped partially','Not yet tried']},
+    {id:'ef-console-err',label:'Browser console errors (F12 > Console)',type:'textarea',placeholder:'e.g. net::ERR_CERT_AUTHORITY_INVALID on cdn.example.com'},
+    {id:'ef-har',label:'HAR file available?',type:'select',opts:['— select —','Yes — will attach','No']},
+    {id:'ef-other-sw',label:'Other software (DNS, AV, security endpoints)?',type:'text',placeholder:'e.g. Cisco Umbrella, Bitdefender'},
+  ],
+  'dpc-fail': [
+    {id:'ef-dpc-check',label:'Which posture check is failing?',type:'text',placeholder:'e.g. Disk Encryption / AV / OS Version'},
+    {id:'ef-os',label:'OS and agent version',type:'text',placeholder:'e.g. macOS 14.2 / agent 12.6'},
+    {id:'ef-security-sw',label:'Security software installed',type:'text',placeholder:'e.g. CrowdStrike Falcon, Harmony Endpoint E88'},
+  ],
+  'perf-slow': [
+    {id:'ef-resource-type',label:'Public or private resources slow?',type:'select',opts:['— select —','Public (internet)','Private (internal resources)','Both']},
+    {id:'ef-services',label:'Which services are slow?',type:'text',placeholder:'e.g. Web browsing, RDP, video calls'},
+    {id:'ef-timing',label:'All day or specific times?',type:'text',placeholder:'e.g. Only 09:00-10:00 EST'},
+    {id:'ef-conn-type',label:'Connection type',type:'select',opts:['— select —','Wi-Fi','LAN cable','Mobile data']},
+    {id:'ef-user-loc',label:'User location',type:'text',placeholder:'e.g. New York, US'},
+    {id:'ef-gw-loc',label:'Nearest gateway location',type:'text',placeholder:'e.g. Dallas, US'},
+    {id:'ef-spd-disconn',label:'Speedtest disconnected (nearest server)',type:'text',placeholder:'e.g. 150 Mbps / 12ms'},
+    {id:'ef-spd-gw-disconn',label:'Speedtest disconnected (gateway city)',type:'text',placeholder:'e.g. 140 Mbps / 18ms'},
+    {id:'ef-spd-conn',label:'Speedtest connected to gateway',type:'text',placeholder:'e.g. 85 Mbps / 32ms'},
+  ],
+};
+
+function showTicketPanel(idx){
+  const panel = document.getElementById('ticket-' + idx);
+  if(panel.style.display !== 'none'){panel.style.display='none';return;}
+
+  const symId = activeSym ? activeSym.id : '';
+  const extraFields = EXTRA_FIELDS[symId] || [];
+
+  // Build extra fields HTML
+  const extraHtml = extraFields.length ? extraFields.map(f => {
+    const inner = f.type === 'select'
+      ? `<select id="${f.id}">${f.opts.map(o=>`<option>${o}</option>`).join('')}</select>`
+      : f.type === 'textarea'
+      ? `<textarea id="${f.id}" placeholder="${f.placeholder||''}"></textarea>`
+      : `<input type="text" id="${f.id}" placeholder="${f.placeholder||''}">`;
+    return `<div class="intake-field"><label>${f.label}</label>${inner}</div>`;
+  }).join('') : '<p style="font-size:12px;color:var(--text-light);grid-column:1/-1">No additional fields needed for this symptom.</p>';
+
+  // Build intake form HTML (basic fields, always shown)
+  const intakeHtml = `
+    <div class="intake-field">
+      <label>Tenant ID (workspace name)</label>
+      <input type="text" id="if-tenant-${idx}" placeholder="e.g. yourcompany.perimeter81.com">
+    </div>
+    <div class="intake-field">
+      <label>Respondent timezone</label>
+      <input type="text" id="if-tz-${idx}" placeholder="e.g. EST / GMT+2 / PST">
+    </div>
+    <div class="intake-field">
+      <label>Impact — users / machines affected</label>
+      <input type="text" id="if-impact-${idx}" placeholder="e.g. 3 users, all Windows">
+    </div>
+    <div class="intake-field">
+      <label>When did the issue start?</label>
+      <input type="text" id="if-when-${idx}" placeholder="e.g. Today 14:00 EST / 2 days ago">
+    </div>
+    <div class="intake-field">
+      <label>Did it work before?</label>
+      <select id="if-worked-${idx}">
+        <option value="">— select —</option>
+        <option value="Yes — worked before">Yes — worked before</option>
+        <option value="No — never worked">No — never worked</option>
+        <option value="Unknown">Unknown</option>
+      </select>
+    </div>
+    <div class="intake-field">
+      <label>What changed recently? (if anything)</label>
+      <input type="text" id="if-changes-${idx}" placeholder="e.g. Agent update, new policy, firewall change">
+    </div>`;
+
+  const hasExtra = extraFields.length > 0;
+
+  panel.style.display = 'block';
+  panel.innerHTML = `
+    <div class="ticket-form">
+      <h4>Basic info</h4>
+      <div class="intake-grid">${intakeHtml}</div>
+      ${hasExtra ? `<h4 style="margin-top:16px;">Additional details for this issue type</h4><div class="intake-grid">${extraHtml}</div>` : ''}
+      <div style="margin-top:14px;display:flex;gap:8px;">
+        <button class="flow-btn flow-btn-yes" style="font-size:12px;" onclick="generateTicket(${idx})">Generate ticket</button>
+      </div>
+    </div>
+    <div id="ticket-output-${idx}"></div>`;
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function generateTicket(idx, skip){
+  // Collect intake form values (scoped to this panel instance by idx)
+  const g = id => {
+    // Try idx-scoped version first, fall back to global id
+    const el = document.getElementById(id + '-' + idx) || document.getElementById(id);
+    return el ? el.value.trim() : '';
+  };
+
+  // Collect troubleshooter path
+  const steps = document.querySelectorAll('.flow-step');
+  let path = [];
+  steps.forEach(s => {
+    const q = s.querySelector('.flow-step-q');
+    const ans = s.querySelector('.flow-btns span strong');
+    if(q && ans) path.push('Q: ' + q.textContent.trim() + '\nA: ' + ans.textContent.trim());
+  });
+
+  // Collect extra field values unless skipped
+  const symId = activeSym ? activeSym.id : '';
+  const extraFields = skip ? [] : (EXTRA_FIELDS[symId] || []);
+  const extraValues = {};
+  extraFields.forEach(f => { extraValues[f.id] = g(f.id); });
+
+  const ticket = buildTicket(activeSym, path, {
+    tenant: g('if-tenant'),
+    tz: g('if-tz'),
+    impact: g('if-impact'),
+    when: g('if-when'),
+    worked: g('if-worked'),
+    changes: g('if-changes'),
+  }, extraValues, extraFields);
+
+  const out = document.getElementById('ticket-output-' + idx);
+  out.innerHTML = `
+    <div class="ticket-output">${ticket.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="flow-btn flow-btn-yes" style="font-size:12px;" onclick="copyTicketText(${idx})">Copy to clipboard</button>
+      <a href="https://support.checkpoint.com" target="_blank" class="flow-btn flow-btn-no" style="font-size:12px;text-decoration:none;display:inline-flex;align-items:center;">Open support portal ↗</a>
+    </div>
+    <p style="font-size:11px;color:var(--text-light);margin-top:8px;">Attach agent logs and any screenshots, then paste into your support ticket at support.checkpoint.com</p>`;
+  out._ticketText = ticket;
+  out.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function copyTicketText(idx){
+  const out = document.getElementById('ticket-output-' + idx);
+  if(!out || !out._ticketText) return;
+  navigator.clipboard.writeText(out._ticketText).then(()=>{
+    const btn = out.parentElement.querySelector('.flow-btn-yes');
+    if(btn){const orig=btn.textContent;btn.textContent='✓ Copied!';setTimeout(()=>btn.textContent=orig,2000);}
+  }).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=out._ticketText;
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  });
+}
+
+function copyTicket_old_unused(idx){
+  const panel = document.getElementById('ticket-' + idx);
+  if(!panel || !panel._ticketText) return;
+  navigator.clipboard.writeText(panel._ticketText).then(()=>{
+    const btn = panel.querySelector('.flow-btn-yes');
+    if(btn){const orig=btn.textContent;btn.textContent='✓ Copied!';setTimeout(()=>btn.textContent=orig,2000);}
+  }).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=panel._ticketText;
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  });
 }
 
 // INIT
