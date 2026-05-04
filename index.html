@@ -289,14 +289,137 @@ body.sidebar-collapsed .sidebar-toggle{left:0;}
 ::-webkit-scrollbar-track{background:var(--grey-light);}
 ::-webkit-scrollbar-thumb{background:var(--border);} 
 ::-webkit-scrollbar-thumb:hover{background:var(--grey-mid);}
+
+/* ═══════════════════════════════════════════════════
+   MOBILE RESPONSIVE — breakpoint ≤ 768px
+   ═══════════════════════════════════════════════════ */
+
+/* Hamburger — hidden on desktop */
+.hamburger{
+  display:none;
+  background:none;border:none;color:var(--white);
+  font-size:22px;cursor:pointer;padding:4px 8px;
+  line-height:1;flex-shrink:0;
+}
+
+/* Overlay for drawer */
+.mobile-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.45);z-index:199;
+}
+.mobile-overlay.open{display:block;}
+
+@media (max-width:768px){
+
+  /* ── Core grid: stack vertically ── */
+  .app{
+    grid-template-columns:1fr !important;
+    grid-template-rows:56px 1fr !important;
+  }
+  .app.sidebar-collapsed{grid-template-columns:1fr !important;}
+
+  /* ── Topbar ── */
+  .topbar{padding:0 14px;gap:10px;}
+  .topbar-brand{font-size:14px;}
+  .topbar-search{flex:1;min-width:0;}
+  .topbar-search input{width:100%;}
+
+  /* ── Hamburger visible ── */
+  .hamburger{display:flex;align-items:center;}
+
+  /* ── Sidebar becomes a slide-in drawer ── */
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;width:280px;
+    transform:translateX(-100%);transition:transform .22s ease;
+    z-index:200;box-shadow:4px 0 24px rgba(0,0,0,.3);
+  }
+  .sidebar.mobile-open{transform:translateX(0);}
+
+  /* ── Sidebar toggle pill — hide on mobile (hamburger replaces it) ── */
+  .sidebar-toggle{display:none !important;}
+
+  /* ── Main content fills full width ── */
+  .main{width:100%;overflow:hidden;}
+
+  /* ── Guide body ── */
+  .guide-body{padding:20px 16px;}
+
+  /* ── Tables: horizontal scroll ── */
+  .gt{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;}
+
+  /* ── Sym grid: 1 column ── */
+  .sym-grid{grid-template-columns:1fr !important;}
+
+  /* ── Error grid: 1 column ── */
+  .error-grid{grid-template-columns:1fr !important;}
+
+  /* ── Intake / ticket form: 1 column ── */
+  .intake-grid{grid-template-columns:1fr !important;}
+
+  /* ── Quick cards on home: 1 column ── */
+  .quick-cards{grid-template-columns:1fr !important;}
+
+  /* ── Hero text ── */
+  .hero h1{font-size:22px;}
+  .hero p{font-size:13px;}
+
+  /* ── Steps: reduce padding ── */
+  .s-step{flex-direction:column;gap:6px;}
+  .s-num{width:28px;height:28px;font-size:13px;flex-shrink:0;}
+
+  /* ── Flow buttons: wrap ── */
+  .flow-btns{flex-wrap:wrap;gap:6px;}
+  .flow-btn{font-size:12px;padding:8px 14px;}
+
+  /* ── Callouts ── */
+  .callout{padding:10px 12px;font-size:12.5px;}
+
+  /* ── Code blocks: scroll ── */
+  code,pre{word-break:break-all;overflow-x:auto;max-width:100%;}
+
+  /* ── Ticket output: scroll ── */
+  .ticket-output{max-height:280px;font-size:10.5px;}
+
+  /* ── Guide sub-headings ── */
+  .g-sub{font-size:11px;}
+
+  /* ── Page scroll ── */
+  .page-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;}
+
+  /* ── Topbar nav pills: hide labels, keep icons ── */
+  .topbar-nav .nav-pill span.pill-label{display:none;}
+
+  /* ── Search results ── */
+  .search-results{width:calc(100vw - 28px);left:14px;right:14px;}
+
+  /* ── Sidebar footer ── */
+  .sidebar-footer{font-size:11px;padding:12px 14px;}
+
+  /* ── Prose ── */
+  .prose{font-size:13px;}
+
+  /* ── tsFlow (troubleshooter flow panel) ── */
+  #tsFlow{padding:16px 12px;}
+
+  /* ── flow steps ── */
+  .flow-step{padding:14px 12px;}
+  .flow-step-q{font-size:13.5px;}
+}
+
+@media (max-width:480px){
+  .hero h1{font-size:18px;}
+  .topbar-search{display:none;}
+  .guide-body{padding:16px 12px;}
+}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileSidebar()"></div>
+<div class="app" id="appRoot">
 
 <!-- TOPBAR -->
 <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">‹</button>
-<header class="topbar">
+<header class="topbar"><button class="hamburger" id="hamburger" onclick="toggleMobileSidebar()" aria-label="Toggle menu">☰</button>
   <a class="topbar-logo" href="#" onclick="showPage('home')">
     <!-- Check Point logo — white variant for dark background -->
     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 205 44">
@@ -342,7 +465,7 @@ body.sidebar-collapsed .sidebar-toggle{left:0;}
   <div class="nav-item" onclick="showPage('guide');showSection('infinity-portal')"><span class="n-icon">›</span>Infinity Portal Setup</div>
   <div class="nav-item" onclick="showPage('guide');showSection('overview')"><span class="n-icon">›</span>What is Check Point SASE?</div>
   <div class="nav-item" onclick="showPage('guide');showSection('access-model')"><span class="n-icon">›</span>Agent vs. Agentless</div>
-  <div class="nav-item" onclick="showPage('guide');showSection('object-model')"><span class="n-icon">›</span>Network Object Model</div>
+  <div class="nav-item" onclick="showPage('guide');showSection('object-model')"><span class="n-icon">›</span>Network Infrastructure &amp; Objects</div>
 
   <div class="sidebar-section">Guide — Section 2</div>
   <div class="nav-item" onclick="showPage('guide');showSection('deploy')"><span class="n-icon">›</span>Deployment Workflow</div>
@@ -521,15 +644,27 @@ const SECTIONS = {
     <div class="callout c-warn"><strong>ZTNA App Access only works for internal resources reachable via an existing SASE Network tunnel.</strong> It does not support public internet resources and provides no internet security protection.</div>
     <div class="callout c-note"><strong>Exception — publishing a public website you own via ZTNA:</strong> If a customer owns a public-facing site that is also reachable through an IPsec or Connector tunnel, they can publish it via ZTNA and expose it under their own domain using <strong>URL Aliasing</strong> (CNAME + SSL cert). See the ZTNA &amp; Posture Check section for full setup steps.</div>`
   },
-  'object-model':{ey:'Section 1',ti:'Network Object Model',de:'Every tenant uses a three-tier object hierarchy. Understanding this is essential for correct policy, DNS, and tunnel configuration.',html:`
-    <table class="gt"><tr><th>Object</th><th>Description</th><th>Key Properties</th></tr>
-    <tr><td><strong>Network</strong></td><td>Top-level container — private IP subnet and DNS namespace</td><td>Subnet (permanent after creation), Access Type, DNS FQDN</td></tr>
-    <tr><td><strong>Region</strong></td><td>Geographic PoP deployment within a Network</td><td>80+ PoP locations worldwide, optional Regional Private DNS</td></tr>
-    <tr><td><strong>Instance / Gateway</strong></td><td>Active cloud gateway VM — tunnel termination and agent connections</td><td>Public IP, image version, ~1 Gbps / up to <strong>100</strong> concurrent users</td></tr>
-    <tr><td><strong>Tunnel</strong></td><td>IPsec or WireGuard site-to-site connection on a gateway</td><td>Peer IP, PSK, Phase 1/2 params, HA flag</td></tr>
+  'object-model':{ey:'Section 1',ti:'Network Infrastructure &amp; Objects',de:'Two distinct concepts share the word "object" in SASE. This section covers both: the network infrastructure hierarchy (Network → Region → Gateway) and the policy Objects used in rules and split tunneling.',html:`
+
+    <div class="g-sub">Part 1 — Network Infrastructure Hierarchy</div>
+    <p class="prose">Every customer tenant is built on a four-tier infrastructure hierarchy. These are <strong>not</strong> the same as the policy Objects in the menu — they are the underlying network constructs that everything else runs on.</p>
+    <table class="gt"><tr><th>Infrastructure Element</th><th>Description</th><th>Key Properties</th></tr>
+    <tr><td><strong>Network</strong></td><td>Top-level container — defines the tenant's private IP subnet and DNS namespace. Each customer gets one or more Networks.</td><td>Subnet (permanent after creation), Access Type, DNS FQDN suffix</td></tr>
+    <tr><td><strong>Region</strong></td><td>A geographic PoP deployment within a Network. Each region runs on Check Point's global gateway infrastructure.</td><td>80+ PoP locations worldwide, optional Regional Private DNS server</td></tr>
+    <tr><td><strong>Gateway (Instance)</strong></td><td>The active cloud gateway VM within a Region — this is where agent connections terminate and tunnels are anchored.</td><td>Public IP, image version, ~1 Gbps throughput / ~100 concurrent users per gateway</td></tr>
+    <tr><td><strong>Tunnel</strong></td><td>An IPsec or WireGuard Connector site-to-site connection attached to a gateway, bridging the SASE network to an on-prem or cloud site.</td><td>Peer IP, PSK, Phase 1/2 params, HA flag</td></tr>
     </table>
-    <div class="callout c-danger"><strong>Subnet is permanent.</strong> Network subnets cannot be changed after creation. Plan IP allocation carefully before provisioning — ensure no overlap with existing customer infrastructure.</div>
-    <div class="callout c-note"><strong>Scaling:</strong> Each gateway handles ~1 Gbps and ~50 concurrent users. Add a second instance in the same region for load balancing when usage grows.</div>`
+    <div class="callout c-danger"><strong>Subnet is permanent.</strong> Network subnets cannot be changed after creation. Plan IP allocation carefully before provisioning — confirm no overlap with the customer's existing infrastructure.</div>
+    <div class="callout c-note"><strong>Scaling:</strong> Each gateway handles ~1 Gbps and up to 100 concurrent users. Add a second gateway in the same region for load balancing as usage grows.</div>
+
+    <div class="g-sub">Part 2 — Policy Objects (Objects menu)</div>
+    <p class="prose">Separately, the portal has an <strong>Objects</strong> section (in the left nav) containing reusable definitions that are referenced in Firewall rules, Access Policy rules, Bypass Rules, and split tunneling configuration. These are <em>not</em> infrastructure — they are named, reusable values you define once and apply across multiple rules.</p>
+    <table class="gt"><tr><th>Object Type</th><th>Found Under</th><th>Used In</th><th>Example</th></tr>
+    <tr><td><strong>Addresses</strong></td><td>Objects &gt; Addresses</td><td>Firewall rules (source / destination), split tunneling</td><td>A named IP, subnet (10.10.5.0/24), FQDN, or IP range representing a resource or network</td></tr>
+    <tr><td><strong>Services</strong></td><td>Objects &gt; Services</td><td>Firewall rules (service / protocol field)</td><td>A named TCP/UDP port or port range — e.g. "HTTPS" = TCP 443, or a custom "RDP" = TCP 3389</td></tr>
+    <tr><td><strong>Custom URLs</strong></td><td>Objects &gt; Custom URLs</td><td>Access Policy rules, Bypass Rules</td><td>A named URL pattern or domain used to apply or exempt traffic from HTTPS inspection and category rules</td></tr>
+    </table>
+    <div class="callout c-note"><strong>Why this matters:</strong> When building Firewall rules, the Source and Destination fields accept Addresses objects. The Service field accepts Services objects. For Access Policy bypass rules, Custom URLs let you define patterns once and reuse them across multiple rules — rather than typing the same domain into every rule individually.</div>`
   },
   'deploy':{ey:'Section 2',ti:'Deployment Workflow',de:'Provisioning sequence for a new customer tenant. Order matters — tunnels must be up and verified before agents or ZTNA are configured, if Private Access to internal resources is required.',html:`
     <div class="callout c-note"><strong>Workflow depends on the customer use case:</strong><br>
@@ -1759,6 +1894,28 @@ function copyTicket_old_unused(idx){
     document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
   });
 }
+
+// ─── MOBILE SIDEBAR ────────────────────────────────
+function toggleMobileSidebar(){
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('mobileOverlay');
+  const isOpen = sidebar.classList.toggle('mobile-open');
+  overlay.classList.toggle('open', isOpen);
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+
+function closeMobileSidebar(){
+  document.querySelector('.sidebar').classList.remove('mobile-open');
+  document.getElementById('mobileOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close sidebar when a nav item is clicked on mobile
+document.addEventListener('click', function(e){
+  if(window.innerWidth <= 768 && e.target.closest('.nav-item')){
+    closeMobileSidebar();
+  }
+});
 
 // INIT
 renderSymGrid();
